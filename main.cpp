@@ -3,6 +3,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -10,9 +13,11 @@
 #include "shader.h"
 #include "camera.h"
 //#include <learnopengl/model.h>
+#include "src/core/Assets.h"
 
 #include <iostream>
 
+void renderMesh(Mesh& mesh);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -83,6 +88,11 @@ int main()
     // enable seamless cubemap sampling for lower mip levels in the pre-filter map.
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
+
+    // load objects
+    Mesh mesh = Assets::loadOBJFile("assets/objects/test2.obj", "assets/objects", true);
+
+    //
     // build and compile shaders
     // -------------------------
     Shader pbrShader("assets/shaders/pbr.vs", "assets/shaders/pbr.fs");
@@ -498,6 +508,12 @@ int main()
         pbrShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
         renderSphere();
 
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(10.0, 0.0, 2.0));
+        pbrShader.setMat4("model", model);
+        pbrShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+        renderMesh(mesh);
+
         // render light source (simply re-render sphere at light positions)
         // this looks a bit off as we use the same shader, but it'll make their positions obvious and 
         // keeps the codeprint small.
@@ -525,6 +541,7 @@ int main()
         //glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap); // display irradiance map
         //glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap); // display prefilter map
         renderCube();
+        
 
         // render BRDF map to screen
         //brdfShader.Use();
@@ -700,6 +717,45 @@ void renderSphere()
 
     glBindVertexArray(sphereVAO);
     glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+}
+
+void renderMesh(Mesh& mesh)
+{
+    unsigned int VAO = 0;
+    unsigned int VBO = 0;
+    unsigned int EBO = 0;
+
+    if (VAO == 0)
+    {
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glBufferData(GL_ARRAY_BUFFER, mesh.getVertices().size() * sizeof(Vertex), &mesh.getVertices()[0], GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.getIndices().size() * sizeof(unsigned int),
+            &mesh.getIndices()[0], GL_STATIC_DRAW);
+
+        // vertex positions
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+        //// vertex normals
+        //glEnableVertexAttribArray(1);
+        //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+        //// vertex texture coords
+        //glEnableVertexAttribArray(2);
+        //glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+
+        glBindVertexArray(0);
+    }
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 
 // renderCube() renders a 1x1 3D cube in NDC.
