@@ -91,6 +91,7 @@ int main()
 
     // load objects
     Mesh mesh = Assets::loadOBJFile("assets/objects/test2.obj", "assets/objects", true);
+    Mesh planeMesh = Assets::loadOBJFile("assets/objects/plane.obj", "assets/objects", true);
 
     //
     // build and compile shaders
@@ -514,6 +515,12 @@ int main()
         pbrShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
         renderMesh(mesh);
 
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(15.0, 0.0, 2.0));
+        pbrShader.setMat4("model", model);
+        pbrShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+        renderMesh(planeMesh);
+
         // render light source (simply re-render sphere at light positions)
         // this looks a bit off as we use the same shader, but it'll make their positions obvious and 
         // keeps the codeprint small.
@@ -743,12 +750,12 @@ void renderMesh(Mesh& mesh)
         // vertex positions
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-        //// vertex normals
-        //glEnableVertexAttribArray(1);
-        //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
-        //// vertex texture coords
-        //glEnableVertexAttribArray(2);
-        //glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+        // vertex normals
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+        // vertex texture coords
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
 
         glBindVertexArray(0);
     }

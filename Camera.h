@@ -77,7 +77,6 @@ public:
             MovementSpeed = 2.5f;
         
         float velocity = MovementSpeed * deltaTime;
-        std::cout << velocity << std::endl;
 
         if (direction == FORWARD)
             Position += Front * velocity;

@@ -25,7 +25,7 @@ Mesh Assets::loadOBJFile(const char* path, const char* basePath, bool triangulat
     }
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
-    std::unordered_map<glm::vec3, uint32_t> uniqueVertices;
+    std::unordered_map<Vertex, uint32_t> uniqueVertices;
 
     for (const auto& shape : shapes)
     {
@@ -35,14 +35,26 @@ Mesh Assets::loadOBJFile(const char* path, const char* basePath, bool triangulat
                 attributes.vertices[3 * index.vertex_index + 0],
                 attributes.vertices[3 * index.vertex_index + 1],
                 attributes.vertices[3 * index.vertex_index + 2] };
+            
+            glm::vec3 normal{
+                attributes.normals[3 * index.normal_index + 0],
+                attributes.normals[3 * index.normal_index + 1],
+                attributes.normals[3 * index.normal_index + 2] };
+            
+            glm::vec2 uv{
+                attributes.texcoords[2 * index.texcoord_index + 0],
+                1.0f - attributes.texcoords[2 * index.texcoord_index + 1] };
 
-            if (uniqueVertices.count(position) == 0)
+            
+            Vertex vertex { position, normal, uv };
+
+            if (uniqueVertices.count(vertex) == 0)
             {
-                uniqueVertices[position] = static_cast<uint32_t>(vertices.size());
-                vertices.push_back(Vertex{ position });
+                uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+                vertices.push_back(vertex);
             }
 
-            indices.push_back(uniqueVertices[position]);
+            indices.push_back(uniqueVertices[vertex]);
         }
     }
 
