@@ -3,5 +3,5 @@
 
 bool Vertex::operator==(const Vertex& other) const
 {
-    return position == other.position && texCoord == other.texCoord;
+    return Position == other.Position && TexCoords == other.TexCoords;
 }

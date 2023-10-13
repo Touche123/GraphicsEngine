@@ -14,10 +14,12 @@
 #include "camera.h"
 //#include <learnopengl/model.h>
 #include "src/core/Assets.h"
+#include "src/resourceManager.h"
 
 #include <iostream>
 
 void renderMesh(Mesh& mesh);
+void renderModel(const Model& model);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -90,6 +92,8 @@ int main()
 
 
     // load objects
+    //auto model = ResourceManager::GetInstance().GetModel("Test", "assets/objects/test2.obj");
+
     Mesh mesh = Assets::loadOBJFile("assets/objects/test2.obj", "assets/objects", true);
     Mesh planeMesh = Assets::loadOBJFile("assets/objects/plane.obj", "assets/objects", true);
 
@@ -513,13 +517,21 @@ int main()
         model = glm::translate(model, glm::vec3(10.0, 0.0, 2.0));
         pbrShader.setMat4("model", model);
         pbrShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-        renderMesh(mesh);
+        auto testmodel = ResourceManager::GetInstance().GetModel("Test", "assets/objects/test2.obj");
+        renderModel(*testmodel.get());
+        
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(15.0, 0.0, 2.0));
         pbrShader.setMat4("model", model);
         pbrShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-        renderMesh(planeMesh);
+        auto testmodel2 = ResourceManager::GetInstance().GetModel("Test2", "assets/objects/plane.obj");
+        renderModel(*testmodel2.get());
+
+
+        
+        
+        
 
         // render light source (simply re-render sphere at light positions)
         // this looks a bit off as we use the same shader, but it'll make their positions obvious and 
@@ -728,41 +740,19 @@ void renderSphere()
 
 void renderMesh(Mesh& mesh)
 {
-    unsigned int VAO = 0;
-    unsigned int VBO = 0;
-    unsigned int EBO = 0;
-
-    if (VAO == 0)
-    {
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-        glGenBuffers(1, &EBO);
-
-        glBindVertexArray(VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-        glBufferData(GL_ARRAY_BUFFER, mesh.getVertices().size() * sizeof(Vertex), &mesh.getVertices()[0], GL_STATIC_DRAW);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.getIndices().size() * sizeof(unsigned int),
-            &mesh.getIndices()[0], GL_STATIC_DRAW);
-
-        // vertex positions
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-        // vertex normals
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-        // vertex texture coords
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
-
-        glBindVertexArray(0);
-    }
-
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_INT, 0);
+    mesh.VAO.Bind();
+    glDrawElements(GL_TRIANGLES, mesh.IndexCount, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
+}
+
+void renderModel(const Model& model)
+{
+    const auto meshes{ model.GetMeshes() };
+    for (const auto& mesh : meshes)
+    {
+        mesh.VAO.Bind();
+        glDrawElements(GL_TRIANGLES, mesh.IndexCount, GL_UNSIGNED_INT, nullptr);
+    }
 }
 
 // renderCube() renders a 1x1 3D cube in NDC.

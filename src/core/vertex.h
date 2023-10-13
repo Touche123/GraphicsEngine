@@ -4,9 +4,9 @@
 
 struct Vertex
 {
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec2 texCoord;
+    glm::vec3 Position;
+    glm::vec3 Normal;
+    glm::vec2 TexCoords;
 
     bool operator==(const Vertex& other) const;
 };
@@ -18,7 +18,7 @@ namespace std
     {
         size_t operator()(const Vertex& vertex) const
         {
-            return ((hash<glm::vec3>()(vertex.position) ^ (hash<glm::vec2>()(vertex.texCoord) << 1)) >> 1);
+            return ((hash<glm::vec3>()(vertex.Position) ^ (hash<glm::vec2>()(vertex.TexCoords) << 1)) >> 1);
         }
     };
 }
