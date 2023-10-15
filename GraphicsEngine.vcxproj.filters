@@ -13,12 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{103923ee-e980-4bef-9a9a-ce25c59e8a9f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MeshPrimitives.h">
@@ -27,30 +27,78 @@
     <ClCompile Include="Monitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\Assets.cpp">
+    <ClCompile Include="src\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\mesh.cpp">
+    <ClCompile Include="src\Graphics\GLVertexArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\vertex.cpp">
+    <ClCompile Include="src\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\GLVertexArray.cpp">
+    <ClCompile Include="src\ResourceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\model.cpp">
+    <ClCompile Include="src\PBRMaterial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\resourceManager.cpp">
+    <ClCompile Include="src\Engine.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Demos\Demo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\GLFrameBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SkyBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\GLShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\GLShaderProgramFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\glad\include\glad\glad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\pugixml\pugixml.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Vertex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ViewFrustum.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AABB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\fmt\src\format.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\GUISystem.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\WindowSystem.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\RenderSystem.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="src\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Monitor.h">
@@ -62,39 +110,195 @@
     <ClInclude Include="tiny_obj_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\Assets.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\vertex.h">
+    <ClInclude Include="src\Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\core\glm-wrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\mesh.h">
+    <ClInclude Include="src\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\GLVertexArray.h">
+    <ClInclude Include="src\Graphics\GLVertexArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\model.h">
+    <ClInclude Include="src\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\resourceManager.h">
+    <ClInclude Include="src\ResourceManager.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PBRMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SceneBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FrameStats.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Demos\Demo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\GLFrameBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\HardwareCaps.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Skybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\GLShaderProgramFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\GLShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\ShaderStage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\StaticDirectionalLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\StaticPointLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\StaticSpotLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ViewFrustum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\BoundingVolume.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AABB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\WindowSystem.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\RenderSystem.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\GUISystem.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\shaders\shader.fs">
+    <None Include="Data\Shaders\brdfps.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="assets\shaders\shader.vs">
+    <None Include="Data\Shaders\brdfvs.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="assets\shaders\lightcube.fs">
+    <None Include="Data\Shaders\cubemapconverterps.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="assets\shaders\lightcube.vs">
+    <None Include="Data\Shaders\cubemapvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\debugdepthps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\debugdepthvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\debugtexps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\debugtexvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\depthps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\depthvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\forwardps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\forwardvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\gaussianblurps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\geometrypassps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\geometrypassvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\irradianceConvolutionps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\lightaccumulationps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\lightaccumulationvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\lightcullingcs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\lightingpassps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\lightingpassvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\PBRps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\PBRvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\prefilterps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\screenquadvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\shadowdepthps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\shadowdepthvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\skyboxps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\skyboxvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\wireframegs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\bloomblendps.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\ssao_geometryvs.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Data\Shaders\ssao_geometryps.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

@@ -75,8 +75,12 @@
     <LibraryPath>C:\dev\c++\GraphicsEngine\ext\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\dev\c++\GraphicsEngine\ext\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
-    <LibraryPath>C:\dev\c++\GraphicsEngine\ext\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(SolutionDir)ext\stb\;$(SolutionDir)ext\Assimp\include\;$(SolutionDir)ext\nuklear\include\;$(SolutionDir)ext\fmt\include\;$(SolutionDir)ext\glad\include\;$(SolutionDir)ext\pugixml;C:\dev\c++\GraphicsEngine\ext\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)ext\Assimp\;C:\dev\c++\GraphicsEngine\ext\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\dev\c++\GraphicsEngine\ext\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\dev\c++\GraphicsEngine\ext\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -111,14 +115,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -129,45 +133,114 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\core\Assets.cpp" />
-    <ClCompile Include="glad.c" />
+    <ClCompile Include="ext\fmt\src\format.cc" />
+    <ClCompile Include="ext\glad\include\glad\glad.c" />
+    <ClCompile Include="ext\pugixml\pugixml.cpp" />
+    <ClCompile Include="src\AABB.cpp" />
+    <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\core\mesh.cpp" />
+    <ClCompile Include="src\core\GUISystem.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="MeshPrimitives.h" />
     <ClCompile Include="Monitor.cpp" />
-    <ClCompile Include="src\core\model.cpp" />
-    <ClCompile Include="src\core\vertex.cpp" />
-    <ClCompile Include="src\graphics\GLVertexArray.cpp" />
-    <ClCompile Include="src\resourceManager.cpp" />
+    <ClCompile Include="src\Model.cpp" />
+    <ClCompile Include="src\PBRMaterial.cpp" />
+    <ClCompile Include="src\core\RenderSystem.cpp" />
+    <ClCompile Include="src\Demos\Demo.cpp" />
+    <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\Graphics\GLFrameBuffer.cpp" />
+    <ClCompile Include="src\Graphics\GLShaderProgram.cpp" />
+    <ClCompile Include="src\Graphics\GLShaderProgramFactory.cpp" />
+    <ClCompile Include="src\Graphics\GLVertexArray.cpp" />
+    <ClCompile Include="src\ResourceManager.cpp" />
+    <ClCompile Include="src\SceneBase.cpp" />
+    <ClCompile Include="src\core\WindowSystem.cpp" />
+    <ClCompile Include="src\SkyBox.cpp" />
+    <ClCompile Include="src\Vertex.cpp" />
+    <ClCompile Include="src\ViewFrustum.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\core\Assets.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="src\core\mesh.h" />
+    <ClInclude Include="src\AABB.h" />
+    <ClInclude Include="src\BoundingVolume.h" />
+    <ClInclude Include="src\Camera.h" />
+    <ClInclude Include="src\core\GUISystem.h" />
+    <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="Monitor.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="src\core\glm-wrapper.h" />
-    <ClInclude Include="src\core\model.h" />
-    <ClInclude Include="src\core\vertex.h" />
-    <ClInclude Include="src\graphics\GLVertexArray.h" />
-    <ClInclude Include="src\resourceManager.h" />
+    <ClInclude Include="src\Model.h" />
+    <ClInclude Include="src\PBRMaterial.h" />
+    <ClInclude Include="src\core\RenderSystem.h" />
+    <ClInclude Include="src\Vertex.h" />
+    <ClInclude Include="src\core\WindowSystem.h" />
+    <ClInclude Include="src\Demos\Demo.h" />
+    <ClInclude Include="src\Engine.h" />
+    <ClInclude Include="src\FrameStats.h" />
+    <ClInclude Include="src\Graphics\GLFrameBuffer.h" />
+    <ClInclude Include="src\Graphics\GLShaderProgram.h" />
+    <ClInclude Include="src\Graphics\GLShaderProgramFactory.h" />
+    <ClInclude Include="src\Graphics\GLVertexArray.h" />
+    <ClInclude Include="src\Graphics\HardwareCaps.h" />
+    <ClInclude Include="src\Graphics\ShaderStage.h" />
+    <ClInclude Include="src\Graphics\StaticDirectionalLight.h" />
+    <ClInclude Include="src\Graphics\StaticPointLight.h" />
+    <ClInclude Include="src\Graphics\StaticSpotLight.h" />
+    <ClInclude Include="src\Input.h" />
+    <ClInclude Include="src\Platform\Platform.h" />
+    <ClInclude Include="src\ResourceManager.h" />
+    <ClInclude Include="src\SceneBase.h" />
+    <ClInclude Include="src\Skybox.h" />
+    <ClInclude Include="src\Timer.h" />
+    <ClInclude Include="src\Utils.h" />
+    <ClInclude Include="src\ViewFrustum.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\shaders\lightcube.fs" />
-    <None Include="assets\shaders\lightcube.vs" />
-    <None Include="assets\shaders\shader.fs" />
-    <None Include="assets\shaders\shader.vs" />
+    <None Include="Data\Shaders\bloomblendps.glsl" />
+    <None Include="Data\Shaders\brdfps.glsl" />
+    <None Include="Data\Shaders\brdfvs.glsl" />
+    <None Include="Data\Shaders\cubemapconverterps.glsl" />
+    <None Include="Data\Shaders\cubemapvs.glsl" />
+    <None Include="Data\Shaders\debugdepthps.glsl" />
+    <None Include="Data\Shaders\debugdepthvs.glsl" />
+    <None Include="Data\Shaders\debugtexps.glsl" />
+    <None Include="Data\Shaders\debugtexvs.glsl" />
+    <None Include="Data\Shaders\depthps.glsl" />
+    <None Include="Data\Shaders\depthvs.glsl" />
+    <None Include="Data\Shaders\forwardps.glsl" />
+    <None Include="Data\Shaders\forwardvs.glsl" />
+    <None Include="Data\Shaders\gaussianblurps.glsl" />
+    <None Include="Data\Shaders\geometrypassps.glsl" />
+    <None Include="Data\Shaders\geometrypassvs.glsl" />
+    <None Include="Data\Shaders\irradianceConvolutionps.glsl" />
+    <None Include="Data\Shaders\lightaccumulationps.glsl" />
+    <None Include="Data\Shaders\lightaccumulationvs.glsl" />
+    <None Include="Data\Shaders\lightcullingcs.glsl" />
+    <None Include="Data\Shaders\lightingpassps.glsl" />
+    <None Include="Data\Shaders\lightingpassvs.glsl" />
+    <None Include="Data\Shaders\PBRps.glsl" />
+    <None Include="Data\Shaders\PBRvs.glsl" />
+    <None Include="Data\Shaders\prefilterps.glsl" />
+    <None Include="Data\Shaders\screenquadvs.glsl" />
+    <None Include="Data\Shaders\shadowdepthps.glsl" />
+    <None Include="Data\Shaders\shadowdepthvs.glsl" />
+    <None Include="Data\Shaders\skyboxps.glsl" />
+    <None Include="Data\Shaders\skyboxvs.glsl" />
+    <None Include="Data\Shaders\ssao_geometryps.glsl" />
+    <None Include="Data\Shaders\ssao_geometryvs.glsl" />
+    <None Include="Data\Shaders\wireframegs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

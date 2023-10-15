@@ -1,0 +1,50 @@
+#pragma once
+
+#include "core/glm-wrapper.h"
+
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+
+struct Vertex {
+	using vec2 = glm::vec2;
+	using vec3 = glm::vec3;
+
+	Vertex() = default;
+
+	Vertex(const vec3& position, const vec2& texcoords) : Position(position),
+		TexCoords(texcoords)
+	{
+	}
+
+	Vertex(const vec3& position, const vec2& texcoords, const vec3& normal) : Position(position),
+		TexCoords(texcoords),
+		Normal(normal)
+	{
+	}
+
+	Vertex(const vec3& position, const vec2& texcoords, const vec3& normal, const vec3& tangent) : Position(position),
+		TexCoords(texcoords),
+		Normal(normal),
+		Tangent(tangent)
+	{
+	}
+
+	bool operator==(const Vertex& other) const;
+
+	vec3 Position;
+	vec2 TexCoords;
+	vec3 Normal;
+	vec3 Tangent;
+};
+
+
+namespace std
+{
+	template <>
+	struct hash<Vertex> {
+		size_t operator()(const Vertex& vertex) const
+		{
+			return ((hash<glm::vec3>()(vertex.Position) ^ (hash<glm::vec2>()(vertex.TexCoords) << 1)) >> 1);
+		}
+	};
+} // namespace std
