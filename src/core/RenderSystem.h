@@ -63,6 +63,8 @@ private:
 	void setupDepthPass();
 	void renderDepthPass(GLShaderProgram& shader, RenderListIterator renderListBegin, RenderListIterator renderListEnd) const;
 
+	void setupDeferredPipleline();
+
 	pugi::xml_node m_rendererNode;
 
 	Graphics::HardwareCaps m_caps;
@@ -105,4 +107,8 @@ private:
 	// Vibrance
 	const float m_vibrance{ 0.1f };
 	const glm::vec4 m_coefficient{ 0.299f, 0.587f, 0.114f, 0.0f };
+
+	GLFramebuffer gBuffer;
+	unsigned int gPosition, gNormal, gAlbedoSpec;
+	unsigned int rboDepth;
 };

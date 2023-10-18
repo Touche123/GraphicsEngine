@@ -30,6 +30,7 @@ GLFWwindow* WindowSystem::Init(const pugi::xml_node& windowNode)
 	glfwSetErrorCallback([](const auto errorCode, const auto* message) {std::cerr << "GLFW Error: " << errorCode << ". " << message << std::endl; });
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, windowNode.attribute("major").as_int());
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, windowNode.attribute("minor").as_int());
+	glfwWindowHint(GLFW_DECORATED, false);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
 #ifdef _DEBUG

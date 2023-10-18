@@ -16,6 +16,9 @@
     <Filter Include="Core">
       <UniqueIdentifier>{103923ee-e980-4bef-9a9a-ce25c59e8a9f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{9ee534a2-6b0f-4ffb-82d0-caa9a6df3aa2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -200,106 +203,131 @@
     <ClInclude Include="src\core\GUISystem.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\Shaders\bloomblendps.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
     <None Include="Data\Shaders\brdfps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\brdfvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\cubemapconverterps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\cubemapvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\debugdepthps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\debugdepthvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\debugtexps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\debugtexvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\depthps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\depthvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\forwardps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\forwardvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\g_bufferps.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\g_buffervs.glsl">
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\gaussianblurps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\geometrypassps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\geometrypassvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\irradianceConvolutionps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\lightaccumulationps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\lightaccumulationvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\lightcullingcs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\lightingpassps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\lightingpassvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\PBRps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\PBRvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\prefilterps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\screenquadvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\shadowdepthps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\shadowdepthvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\skyboxps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\skyboxvs.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Data\Shaders\wireframegs.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Data\Shaders\bloomblendps.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Data\Shaders\ssao_geometryvs.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\ssao_geometryps.glsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="Data\Shaders\ssao_geometryvs.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\wireframegs.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\deferred_shadingps.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\deferred_shadingvs.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GraphicsEngine.rc">
+      <Filter>Resource Files\Shaders</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Data\config.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

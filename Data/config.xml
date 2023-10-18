@@ -4,6 +4,16 @@
     <Window title="MP-APS" fullscreen="false" vsync="true" major="4" minor="4" width="1920" height="1080"/>
     
     <Renderer width="1920" height="1080" shadowResolution="2048">
+		<Program name="LightingPass">
+			<Shader path="Data/Shaders/lightingpassvs.glsl" type="vertex" />
+			<Shader path="Data/Shaders/lightingpassps.glsl" type="fragment" />
+		</Program>
+		
+		<Program name="GBufferShader">
+			<Shader path="Data/Shaders/g_buffervs.glsl" type="vertex" />
+			<Shader path="Data/Shaders/g_bufferps.glsl" type="fragment" />
+		</Program>
+		
     	<Program name="PBRShader">
     		<Shader path="Data/Shaders/PBRvs.glsl" type="vertex" />
             <Shader path="Data/Shaders/wireframegs.glsl" type="geometry" />

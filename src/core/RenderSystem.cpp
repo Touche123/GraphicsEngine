@@ -65,14 +65,15 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 	m_hdrFBO.Init("HDR FBO");
 	m_skybox.Init("Data/hdri/barcelona.hdr", 2048);
 	m_depthBuffer.Init("DepthBuffer");
-
+	gBuffer.Init("´GBuffer");
 	compileShaders();
 
 	setupScreenquad();
-	setupTextureSamplers();
-	setupShadowMap();
-	setupPostProcessing();
-	setupDepthPass();
+	//setupTextureSamplers();
+	//setupShadowMap();
+	//setupPostProcessing();
+	//setupDepthPass();
+	setupDeferredPipleline();
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -145,16 +146,77 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	static auto& blurShader = m_shaderCache.at("GaussianBlurShader");
 	static auto& bloomBlendShader = m_shaderCache.at("BloomBlendShader");
 	static auto& skyboxShader = m_shaderCache.at("SkyboxShader");
-	static auto& depthPassShader = m_shaderCache.at("DepthPassShader");
 
+	static auto& lightingPass = m_shaderCache.at("LightingPass");
+	static auto& gBufferShader = m_shaderCache.at("GBufferShader");
+
+	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer.GetId());
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	gBufferShader.Bind();
+	gBufferShader.SetUniform("projection", camera.GetProjMatrix(m_width, m_height));
+	gBufferShader.SetUniform("view", camera.GetViewMatrix());
+	
+	renderModelsNoTextures(gBufferShader, renderListBegin, renderListEnd);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	lightingPass.Bind();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gPosition);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, gNormal);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+	const unsigned int NR_LIGHTS = 32;
+
+	std::vector<glm::vec3> lightPositions;
+	std::vector<glm::vec3> lightColors;
+	srand(13);
+
+	for (unsigned int i = 0; i < NR_LIGHTS; i++)
+	{
+		// calculate slightly random offsets
+		float xPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
+		float yPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 4.0);
+		float zPos = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
+		lightPositions.push_back(glm::vec3(xPos, yPos, zPos));
+		// also calculate random color
+		float rColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
+		float gColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
+		float bColor = static_cast<float>(((rand() % 100) / 200.0f) + 0.5); // between 0.5 and 1.0
+		lightColors.push_back(glm::vec3(rColor, gColor, bColor));
+	}
+	// send light relevant uniforms
+	for (unsigned int i = 0; i < lightPositions.size(); i++)
+	{
+		lightingPass.SetUniform("lights[" + std::to_string(i) + "].Position", lightPositions[i]);
+		lightingPass.SetUniform("lights[" + std::to_string(i) + "].Color", lightColors[i]);
+		// update attenuation parameters and calculate radius
+		const float linear = 0.7f;
+		const float quadratic = 1.8f;
+		lightingPass.SetUniformf("lights[" + std::to_string(i) + "].Linear", linear);
+		lightingPass.SetUniformf("lights[" + std::to_string(i) + "].Quadratic", quadratic);
+	}
+
+	lightingPass.SetUniform("viewPos", camera.GetPosition());
+	// finally render quad
+	renderQuad();
+
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.GetId());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	
+	return;
+	
 	// Shadow mapping
 	renderShadowMap(scene, renderListBegin, renderListEnd);
 	
 	// Regular rendering
 	m_hdrFBO.Bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//renderDepthPass(depthPassShader, renderListBegin, renderListEnd);
 
 	// Bind pre-computed IBL data
 	glActiveTexture(GL_TEXTURE0);
@@ -564,4 +626,52 @@ void RenderSystem::setupDepthPass()
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete!" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+void RenderSystem::setupDeferredPipleline()
+{
+	gBuffer.Bind();
+
+	// position color buffer
+	glGenTextures(1, &gPosition);
+	glBindTexture(GL_TEXTURE_2D, gPosition);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+	
+	// normal color buffer
+	glGenTextures(1, &gNormal);
+	glBindTexture(GL_TEXTURE_2D, gNormal);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+
+	// color + specular color buffer
+	glGenTextures(1, &gAlbedoSpec);
+	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
+
+	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, attachments);
+
+	unsigned int rboDepth;
+	glGenRenderbuffers(1, &rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_width, m_height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	static auto& lightingPass = m_shaderCache.at("LightingPass");
+	lightingPass.Bind();
+	lightingPass.SetUniformi("gPosition", 0);
+	lightingPass.SetUniformi("gNormal", 1);
+	lightingPass.SetUniformi("gAlbedoSpec", 2);
+	
 }

@@ -171,6 +171,7 @@
     <ClCompile Include="src\ViewFrustum.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\AABB.h" />
     <ClInclude Include="src\BoundingVolume.h" />
     <ClInclude Include="src\Camera.h" />
@@ -217,6 +218,8 @@
     <None Include="Data\Shaders\debugdepthvs.glsl" />
     <None Include="Data\Shaders\debugtexps.glsl" />
     <None Include="Data\Shaders\debugtexvs.glsl" />
+    <None Include="Data\Shaders\deferred_shadingps.glsl" />
+    <None Include="Data\Shaders\deferred_shadingvs.glsl" />
     <None Include="Data\Shaders\depthps.glsl" />
     <None Include="Data\Shaders\depthvs.glsl" />
     <None Include="Data\Shaders\forwardps.glsl" />
@@ -224,6 +227,8 @@
     <None Include="Data\Shaders\gaussianblurps.glsl" />
     <None Include="Data\Shaders\geometrypassps.glsl" />
     <None Include="Data\Shaders\geometrypassvs.glsl" />
+    <None Include="Data\Shaders\g_bufferps.glsl" />
+    <None Include="Data\Shaders\g_buffervs.glsl" />
     <None Include="Data\Shaders\irradianceConvolutionps.glsl" />
     <None Include="Data\Shaders\lightaccumulationps.glsl" />
     <None Include="Data\Shaders\lightaccumulationvs.glsl" />
@@ -241,6 +246,12 @@
     <None Include="Data\Shaders\ssao_geometryps.glsl" />
     <None Include="Data\Shaders\ssao_geometryvs.glsl" />
     <None Include="Data\Shaders\wireframegs.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GraphicsEngine.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Data\config.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
