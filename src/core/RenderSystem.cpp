@@ -73,6 +73,7 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 
 	setupScreenquad();
 	setupGBuffer();
+	setupSSAOBuffer();
 	//setupTextureSamplers();
 
 	glEnable(GL_DEBUG_OUTPUT);
@@ -84,70 +85,6 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glViewport(0, 0, width, height);
-
-	// configure g-buffer framebuffer
-	// ------------------------------
-	
-
-		//// Create framebuffer to hold SSAO processing stage
-	//unsigned int ssaoFBO, ssaoBlurFBO;
-	//glGenFramebuffers(1, &ssaoFBO);  glGenFramebuffers(1, &ssaoBlurFBO);
-	//glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-	//unsigned int ssaoColorBuffer, ssaoColorBufferBlur;
-	//// SSAO color buffer
-	//glGenTextures(1, &ssaoColorBuffer);
-	//glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0);
-	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	//	std::cout << "SSAO Framebuffer not complete!" << std::endl;
-	//// and blur stage
-	//glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
-	//glGenTextures(1, &ssaoColorBufferBlur);
-	//glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBufferBlur, 0);
-	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	//	std::cout << "SSAO Blur Framebuffer not complete!" << std::endl;
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//// generate sample kernel
-	//// ----------------------
-	//std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
-	//std::default_random_engine generator;
-	//std::vector<glm::vec3> ssaoKernel;
-	//for (unsigned int i = 0; i < 64; ++i)
-	//{
-	//	glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, randomFloats(generator));
-	//	sample = glm::normalize(sample);
-	//	sample *= randomFloats(generator);
-	//	float scale = float(i) / 64.0f;
-
-	//	// scale samples s.t. they're more aligned to center of kernel
-	//	scale = ourLerp(0.1f, 1.0f, scale * scale);
-	//	sample *= scale;
-	//	ssaoKernel.push_back(sample);
-	//}
-
-	//// generate noise texture
-	//// ----------------------
-	//std::vector<glm::vec3> ssaoNoise;
-	//for (unsigned int i = 0; i < 16; i++)
-	//{
-	//	glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, 0.0f); // rotate around z-axis (in tangent space)
-	//	ssaoNoise.push_back(noise);
-	//}
-	//unsigned int noiseTexture; glGenTextures(1, &noiseTexture);
-	//glBindTexture(GL_TEXTURE_2D, noiseTexture);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	static auto& deferredShader = m_shaderCache.at("Deferred");
 	
@@ -201,9 +138,6 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	glm::mat4 view = camera.GetViewMatrix();
 	glm::mat4 model = glm::mat4(1.0f);
 
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//glBindBuffer(GL_UNIFORM_BUFFER, m_uboMatrices);
-
 	// Get the shaders we need (static vars initialized during first render call).
 	static auto& gbufferShader = m_shaderCache.at("GBuffer");
 	static auto& deferredShader = m_shaderCache.at("Deferred");
@@ -217,7 +151,7 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	//gBuffer.Bind();
 	// 1. geometry pass: render scene's geometry/color data into gbuffer
 	// -----------------------------------------------------------------
-	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer.GetId());
+	glBindFramebuffer(GL_FRAMEBUFFER, gBufferFBO.GetId());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	gbufferShader.Bind();
 	gbufferShader.SetUniform("projection", projection);
@@ -261,7 +195,7 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	
 	// 2.5. Copy content of geometrys depth buffer to default framebuffer's depth buffer
 	//glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.GetId());
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.GetId());
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, gBufferFBO.GetId());
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glBlitFramebuffer(0,0, (GLint)m_width, (GLint)m_height,0,0, (GLint)m_width, (GLint)m_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -386,9 +320,9 @@ void RenderSystem::renderModelsWithTextures(GLShaderProgram& shader, RenderListI
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, mesh.Material->GetParameterTexture(PBRMaterial::ALBEDO));
 			shader.SetUniformi("texture_diffuse1", 0);
-			/*glActiveTexture(GL_TEXTURE1);
+			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, mesh.Material->GetParameterTexture(PBRMaterial::METALLIC));
-			shader.SetUniformi("texture_specular1", 1);*/
+			shader.SetUniformi("texture_specular1", 1);
 			//shader.SetUniformi("texture_specular1", mesh.Material->GetParameterTexture(PBRMaterial::METALLIC));
 			
 
@@ -560,8 +494,8 @@ void RenderSystem::setProjectionMatrix(const Camera& camera)
 
 void RenderSystem::setupGBuffer()
 {
-	gBuffer.Init("GBuffer");
-	gBuffer.Bind();
+	gBufferFBO.Init("GBuffer");
+	gBufferFBO.Bind();
 
 	// position color buffer
 	glGenTextures(1, &gPosition);
@@ -597,6 +531,70 @@ void RenderSystem::setupGBuffer()
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete!" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderSystem::setupSSAOBuffer()
+{
+	// Create framebuffer to hold SSAO processing stage
+	ssaoFBO.Init("SSAO");
+	ssaoFBO.Bind();
+
+	unsigned int ssaoColorBuffer, ssaoColorBufferBlur;
+	// SSAO color buffer
+	glGenTextures(1, &ssaoColorBuffer);
+	glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_width, m_height, 0, GL_RED, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "SSAO Framebuffer not complete!" << std::endl;
+	// and blur stage
+	ssaoBlurFBO.Init("SSAO Blur");
+	ssaoBlurFBO.Bind();
+	glGenTextures(1, &ssaoColorBufferBlur);
+	glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_width, m_height, 0, GL_RED, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBufferBlur, 0);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "SSAO Blur Framebuffer not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// generate sample kernel
+	// ----------------------
+	std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
+	std::default_random_engine generator;
+	std::vector<glm::vec3> ssaoKernel;
+	for (unsigned int i = 0; i < 64; ++i)
+	{
+		glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, randomFloats(generator));
+		sample = glm::normalize(sample);
+		sample *= randomFloats(generator);
+		float scale = float(i) / 64.0f;
+
+		// scale samples s.t. they're more aligned to center of kernel
+		scale = ourLerp(0.1f, 1.0f, scale * scale);
+		sample *= scale;
+		ssaoKernel.push_back(sample);
+	}
+
+	// generate noise texture
+	// ----------------------
+	std::vector<glm::vec3> ssaoNoise;
+	for (unsigned int i = 0; i < 16; i++)
+	{
+		glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, 0.0f); // rotate around z-axis (in tangent space)
+		ssaoNoise.push_back(noise);
+	}
+	unsigned int noiseTexture; glGenTextures(1, &noiseTexture);
+	glBindTexture(GL_TEXTURE_2D, noiseTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
 void RenderSystem::renderDepthPass(GLShaderProgram& shader, RenderListIterator renderListBegin, RenderListIterator renderListEnd) const

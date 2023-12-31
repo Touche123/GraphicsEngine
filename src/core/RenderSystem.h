@@ -59,6 +59,8 @@ private:
 	void setProjectionMatrix(const Camera& camera);
 	// Sets Framebuffer for GBuffer
 	void setupGBuffer();
+	// Sets framebuffer for ssao computation
+	void setupSSAOBuffer();
 
 	void renderDepthPass(GLShaderProgram& shader, RenderListIterator renderListBegin, RenderListIterator renderListEnd) const;
 
@@ -105,12 +107,14 @@ private:
 	const float m_vibrance{ 0.1f };
 	const glm::vec4 m_coefficient{ 0.299f, 0.587f, 0.114f, 0.0f };
 
-	GLFramebuffer gBuffer;
+	GLFramebuffer gBufferFBO;
+	GLFramebuffer ssaoFBO;
+	GLFramebuffer ssaoBlurFBO;
+
 	//unsigned int gBuffer;
 	unsigned int gPosition, gNormal, gAlbedo;
 	unsigned int rboDepth;
 
-	unsigned int ssaoFBO, ssaoBlurFBO;
 	std::vector<glm::vec3> ssaoKernel;
 	std::vector<glm::vec3> ssaoNoise;
 	unsigned int noiseTexture;
