@@ -91,6 +91,13 @@ GLShaderProgram& GLShaderProgram::SetUniform(const std::string& uniformName, con
 	return *this;
 }
 
+GLShaderProgram& GLShaderProgram::SetVec3(const std::string& uniformName, const glm::vec3& value)
+{
+	glUniform3fv(glGetUniformLocation(m_programID, uniformName.c_str()), 1, &value[0]);
+
+	return *this;
+}
+
 /***********************************************************************************/
 GLShaderProgram& GLShaderProgram::SetUniform(const std::string& uniformName, const glm::mat4x4& value)
 {
@@ -113,7 +120,10 @@ void GLShaderProgram::getUniforms()
 		glGetActiveUniform(m_programID, static_cast<GLuint>(i), sizeof(name) - 1, &name_len, &num, &type, name);
 		name[name_len] = 0;
 
-		const auto nameStr = std::string(name);
+		std::string nameStr = std::string(name);
+
+		if (num > 1)
+			nameStr = nameStr.erase(name_len - 3);
 
 		// TODO: Filter out uniform block members using glGetActiveUniformsiv
 		m_uniforms.try_emplace(nameStr, glGetUniformLocation(m_programID, name));

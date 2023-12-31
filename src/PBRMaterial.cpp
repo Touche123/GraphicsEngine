@@ -27,7 +27,7 @@ void PBRMaterial::Init(const std::string_view name,
 	m_materialTextures[NORMAL] = ResourceManager::GetInstance().LoadTexture(normalPath);
 	m_materialTextures[ROUGHNESS] = ResourceManager::GetInstance().LoadTexture(roughnessPath);
 
-	m_alpha = ResourceManager::GetInstance().LoadTexture(alphaMaskPath);
+	//m_alpha = ResourceManager::GetInstance().LoadTexture(alphaMaskPath);
 }
 
 /***********************************************************************************/

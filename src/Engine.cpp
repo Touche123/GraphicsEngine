@@ -95,7 +95,7 @@ void Engine::SetActiveScene(const std::string_view sceneName)
 		std::cerr << "Engine Error: Scene not found: " << sceneName << std::endl;
 		return;
 	}
-
+	
 	m_activeScene = scene->second.get();
 	m_renderer.UpdateView(m_camera);
 }
@@ -142,6 +142,14 @@ void Engine::Execute()
 
 		Input::GetInstance().Update();
 
+		/*if (Input::GetInstance().IsKeyPressed(GLFW_KEY_L)) 
+		{ 
+			std::ofstream os("out.cereal", std::ios::binary);
+			cereal::BinaryOutputArchive archive(os);
+
+			archive(m_activeScene->m_staticPointLights);
+		}*/
+
 		m_window.Update();
 
 		const auto& [width, height] = m_window.GetFramebufferDims();
@@ -151,7 +159,7 @@ void Engine::Execute()
 		m_activeScene->Update(dt);
 
 		m_renderer.Update(m_camera);
-
+		
 		const auto& renderList{ cullViewFrustum() };
 		m_renderer.Render(m_camera, renderList.cbegin(), renderList.cend(), *m_activeScene, false);
 
@@ -178,19 +186,37 @@ void Engine::shutdown() const
 std::vector<ModelPtr> Engine::cullViewFrustum() const
 {
 	std::vector<ModelPtr> renderList;
-
+	renderList.clear();
 	const auto& dims{ m_window.GetFramebufferDims() };
-	const ViewFrustum viewFrustum(m_camera.GetViewMatrix(), m_camera.GetProjMatrix(dims.first, dims.second));
+	const ViewFrustum viewFrustum(m_camera.GetViewMatrix(), m_camera.GetProjMatrix((float)dims.first, (float)dims.second));
 
-	std::for_each(std::execution::par_unseq, m_activeScene->m_sceneModels.cbegin(), m_activeScene->m_sceneModels.cend(),
-		[&](const auto& model) {
-			const auto result{ viewFrustum.TestIntersection(model->GetBoundingBox()) };
+	for (auto& model : m_activeScene->m_sceneModels)
+	{
+		const auto result = viewFrustum.TestIntersection(model->GetBoundingBox());
 
-			if (result == BoundingVolume::TestResult::INSIDE || result == BoundingVolume::TestResult::INTERSECT)
-			{
-				renderList.push_back(model);
-			}
-		});
+		if (result == BoundingVolume::TestResult::INSIDE || result == BoundingVolume::TestResult::INTERSECT)
+			renderList.push_back(model);
+	}
+	//std::for_each(std::execution::par_unseq, m_activeScene->m_sceneModels.cbegin(), m_activeScene->m_sceneModels.cend(),
+	//	[&](const auto& model) {
+	//		
+	//		const auto result{ viewFrustum.TestIntersection(model->GetBoundingBox()) };
+	//		//std::cout << "Test intersection \n";
+	//		if (result == BoundingVolume::TestResult::INSIDE || result == BoundingVolume::TestResult::INTERSECT)
+	//		{ 
+	//			try
+	//			{
+	//				//std::cout << "Item is intersecting \n";
+	//				renderList.clear();
+	//				renderList.push_back(model);
+	//			} catch (const std::exception& e)
+	//			{
+	//				//std::cout << "Fail intersect \n";
+	//				std::cout << "Exception: " << e.what() << "\n";
+	//			}
+	//			
+	//		}
+	//	});
 
 	return renderList;
 }

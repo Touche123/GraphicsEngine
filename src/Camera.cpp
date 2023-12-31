@@ -96,8 +96,8 @@ void Camera::updateView(const bool constrainPitch /*= true*/)
 			m_firstMouse = false;
 		}
 
-		const auto xOffset = (xPos - m_prevX) * m_sensitivity;
-		const auto yOffset = (m_prevY - yPos) * m_sensitivity; // Reversed since y-coordinates go from bottom to top
+		const auto xOffset = (float)(xPos - m_prevX) * m_sensitivity;
+		const auto yOffset = (float)(m_prevY - yPos) * m_sensitivity; // Reversed since y-coordinates go from bottom to top
 
 		m_prevX = xPos;
 		m_prevY = yPos;

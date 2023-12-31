@@ -36,5 +36,6 @@ private:
 	// All loaded scenes stored in memory
 	std::unordered_map<std::string, std::shared_ptr<SceneBase>> m_scenes;
 	// Current scene being processed by renderer
+	//std::shared_ptr<SceneBase> m_activeScene { nullptr };
 	SceneBase* m_activeScene{ nullptr };
 };

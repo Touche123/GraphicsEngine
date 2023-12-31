@@ -43,7 +43,6 @@ std::string ResourceManager::LoadTextFile(const std::filesystem::path& path) con
 {
 	std::ifstream in(path, std::ios::in);
 	in.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
 	if (!in)
 	{
 		std::cerr << "Resource Manager: File loading error: " + path.string() << " " << errno << std::endl;
@@ -145,7 +144,6 @@ std::optional<CompressedImageDesc> loadCompressedImageFromDisk(const std::filesy
 /***********************************************************************************/
 unsigned int ResourceManager::LoadTexture(const std::filesystem::path& path, const bool useMipMaps, const bool useUnalignedUnpack)
 {
-
 	if (path.filename().empty())
 	{
 		return 0;
@@ -194,6 +192,7 @@ unsigned int ResourceManager::LoadTexture(const std::filesystem::path& path, con
 
 	} else
 	{
+		
 		int width = 0, height = 0, nrComponents = 0;
 		unsigned char* data = stbi_load(pathToLoad.string().c_str(), &width, &height, &nrComponents, 0);
 		if (!data)

@@ -14,7 +14,7 @@
 Model::Model(const std::string_view Path, const std::string_view Name, const bool flipWindingOrder, const bool loadMaterial) : m_name(Name), m_path(Path)
 {
 
-	if (!loadModel(Path, flipWindingOrder, loadMaterial))
+	if (!loadModel(Path, true, loadMaterial))
 	{
 		std::cerr << "Failed to load: " << Name << '\n';
 	}
@@ -86,7 +86,7 @@ bool Model::loadModel(const std::string_view Path, const bool flipWindingOrder, 
 #endif
 
 	std::cout << sizeof(PBRMaterial) << '\n';
-
+	
 	Assimp::Importer importer;
 	const aiScene* scene = nullptr;
 
@@ -142,14 +142,14 @@ void Model::processNode(aiNode* node, const aiScene* scene, const bool loadMater
 {
 
 	// Process all node meshes
-	for (auto i = 0; i < node->mNumMeshes; ++i)
+	for (unsigned int i = 0; i < node->mNumMeshes; ++i)
 	{
 		auto* mesh = scene->mMeshes[node->mMeshes[i]];
 		m_meshes.push_back(processMesh(mesh, scene, loadMaterial));
 	}
 
 	// Process their children via recursive tree traversal
-	for (auto i = 0; i < node->mNumChildren; ++i)
+	for (unsigned int i = 0; i < node->mNumChildren; ++i)
 	{
 		processNode(node->mChildren[i], scene, loadMaterial);
 	}
@@ -161,7 +161,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, const bool loadMater
 	std::vector<Vertex> vertices;
 	glm::vec3 min { 0 }, max{ 0 };
 
-	for (auto i = 0; i < mesh->mNumVertices; ++i)
+	for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
 	{
 		Vertex vertex;
 
@@ -216,10 +216,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, const bool loadMater
 
 	// Get indices from each face
 	std::vector<GLuint> indices;
-	for (auto i = 0; i < mesh->mNumFaces; ++i)
+	for (unsigned int i = 0; i < mesh->mNumFaces; ++i)
 	{
 		const auto face = mesh->mFaces[i];
-		for (auto j = 0; j < face.mNumIndices; ++j)
+		for (unsigned int j = 0; j < face.mNumIndices; ++j)
 		{
 			indices.emplace_back(face.mIndices[j]);
 		}
@@ -247,7 +247,12 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, const bool loadMater
 			// since there could be multiple textures per type
 			aiString albedoPath;
 			mat->GetTexture(aiTextureType_DIFFUSE, 0, &albedoPath);
-
+			if (albedoPath.length <= 0)
+			{
+				std::cout << "No diffuse material\n";
+				albedoPath = "Data/Textures/default.png";
+			}
+				
 			aiString metallicPath;
 			mat->GetTexture(aiTextureType_AMBIENT, 0, &metallicPath);
 

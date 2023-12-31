@@ -8,6 +8,7 @@
 #include "Graphics/StaticSpotLight.h"
 
 #include <string>
+#include <fstream>
 
 /***********************************************************************************/
 // Forward Declarations
@@ -35,6 +36,7 @@ protected:
 	void AddLight(const StaticSpotLight& light);
 
 	void AddModel(const ModelPtr& model);
+	void Load();
 
 private:
 	std::string m_sceneName;

@@ -52,6 +52,7 @@ public:
 	GLShaderProgram& SetUniform(const std::string& uniformName, const glm::vec4& value);
 	GLShaderProgram& SetUniform(const std::string& uniformName, const glm::mat3x3& value);
 	GLShaderProgram& SetUniform(const std::string& uniformName, const glm::mat4x4& value);
+	GLShaderProgram& SetVec3(const std::string& uniformName, const glm::vec3& value);
 
 	auto GetProgramName() const noexcept { return m_programName; }
 

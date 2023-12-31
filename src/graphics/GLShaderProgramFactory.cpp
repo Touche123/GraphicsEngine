@@ -4,7 +4,7 @@
 
 #include <glad/glad.h>
 
-//#include <fmt/core.h>
+#include <fmt/core.h>
 
 #include <iostream>
 #include <unordered_map>
@@ -40,10 +40,13 @@ namespace Graphics
 		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &logLength);
 
 		if (!success)
+		{
+			//GLchar infoLog[1024];
+			std::vector<GLchar> infoLog(logLength);
+			glGetShaderInfoLog(id, logLength, NULL, infoLog.data());
+			std::cout << fmt::format("{}", std::string(infoLog.cbegin(), infoLog.cend())) << std::endl;
 			abort();
-		std::vector<GLchar> infoLog(0, logLength);
-		glGetShaderInfoLog(id, logLength, nullptr, infoLog.data());
-		//std::cout << fmt::format("{}", std::string(infoLog.cbegin(), infoLog.cend())) << std::endl;
+		}
 
 		return success == GL_TRUE;
 	}
@@ -134,7 +137,6 @@ namespace Graphics
 		{
 			auto id{ glCreateShader(Type2GL_ENUM.at(stages[i].type)) };
 			shaderIds.push_back(id);
-
 			auto shaderCode{ ResourceManager::GetInstance().LoadTextFile(stages[i].filePath) };
 			scanForIncludes(shaderCode);
 			replaceAll(shaderCode, "hash ", "#");

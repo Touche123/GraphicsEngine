@@ -55,15 +55,10 @@ private:
 	void setupTextureSamplers();
 	// Setup FBO, resolution, etc for shadow mapping
 	void setupShadowMap();
-	// Configure post-processing effects
-	void setupPostProcessing();
 	// Sets projection matrix variable and updates UBO
 	void setProjectionMatrix(const Camera& camera);
 
-	void setupDepthPass();
 	void renderDepthPass(GLShaderProgram& shader, RenderListIterator renderListBegin, RenderListIterator renderListEnd) const;
-
-	void setupDeferredPipleline();
 
 	pugi::xml_node m_rendererNode;
 
@@ -108,7 +103,18 @@ private:
 	const float m_vibrance{ 0.1f };
 	const glm::vec4 m_coefficient{ 0.299f, 0.587f, 0.114f, 0.0f };
 
-	GLFramebuffer gBuffer;
-	unsigned int gPosition, gNormal, gAlbedoSpec;
+	//GLFramebuffer gBuffer;
+	unsigned int gBuffer;
+	unsigned int gPosition, gNormal, gAlbedo;
 	unsigned int rboDepth;
+
+	unsigned int ssaoFBO, ssaoBlurFBO;
+	std::vector<glm::vec3> ssaoKernel;
+	std::vector<glm::vec3> ssaoNoise;
+	unsigned int noiseTexture;
+	unsigned int ssaoColorBuffer, ssaoColorBufferBlur;
+	// lighting info
+	// -------------
+	std::vector<glm::vec3> lightPositions;
+    std::vector<glm::vec3> lightColors;
 };

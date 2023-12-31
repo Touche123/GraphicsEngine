@@ -2,13 +2,12 @@
 
 #include <string_view>
 #include <iostream>
+#include "ResourceManager.h"
 
 /***********************************************************************************/
 void SceneBase::Init(const std::string_view sceneName)
 {
-
 	m_sceneName = sceneName;
-
 	std::cout << "Loading scene: " << sceneName << std::endl;
 }
 

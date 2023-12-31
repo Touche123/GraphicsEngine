@@ -1,59 +1,29 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 
 <Engine>
-    <Window title="MP-APS" fullscreen="false" vsync="true" major="4" minor="4" width="1920" height="1080"/>
-    
-    <Renderer width="1920" height="1080" shadowResolution="2048">
-		<Program name="LightingPass">
-			<Shader path="Data/Shaders/lightingpassvs.glsl" type="vertex" />
-			<Shader path="Data/Shaders/lightingpassps.glsl" type="fragment" />
+    <Window title="MP-APS" fullscreen="false" vsync="true" major="4" minor="4" width="1600" height="900"/>
+	
+	<Renderer width="1600" height="900" shadowResolution="2048">
+		<Program name="GBuffer">
+			<Shader path="Data/Shaders/g_buffer.vs" type="vertex" />
+			<Shader path="Data/Shaders/g_buffer.fs" type="fragment" />
+		</Program>
+
+		<Program name="Deferred">
+			<Shader path="Data/Shaders/deferred_shading.vs" type="vertex" />
+			<Shader path="Data/Shaders/deferred_shading.fs" type="fragment" />
+		</Program>
+
+		<Program name="DeferredLightBox">
+			<Shader path="Data/Shaders/deferred_light_box.vs" type="vertex" />
+			<Shader path="Data/Shaders/deferred_light_box.fs" type="fragment" />
 		</Program>
 		
-		<Program name="GBufferShader">
-			<Shader path="Data/Shaders/g_buffervs.glsl" type="vertex" />
-			<Shader path="Data/Shaders/g_bufferps.glsl" type="fragment" />
+		<Program name="BasicShader">
+			<Shader path="Data/Shaders/basic.vs" type="vertex" />
+			<Shader path="Data/Shaders/basic.fs" type="fragment" />
 		</Program>
-		
-    	<Program name="PBRShader">
-    		<Shader path="Data/Shaders/PBRvs.glsl" type="vertex" />
-            <Shader path="Data/Shaders/wireframegs.glsl" type="geometry" />
-    		<Shader path="Data/Shaders/PBRps.glsl" type="fragment" />
-    	</Program>
-    	<Program name="DepthPassShader">
-    		<Shader path="Data/Shaders/depthvs.glsl" type="vertex" />
-    		<Shader path="Data/Shaders/depthps.glsl" type="fragment" />
-    	</Program>
-        <Program name="ShadowDepthShader">
-            <Shader path="Data/Shaders/shadowdepthvs.glsl" type="vertex" />
-            <Shader path="Data/Shaders/shadowdepthps.glsl" type="fragment" />
-        </Program>
-    	<Program name="LightCullShader">
-    		<Shader path="Data/Shaders/lightcullingcs.glsl" type="compute" />
-    	</Program>
-    	<Program name="LightAccumulationShader">
-    		<Shader path="Data/Shaders/lightaccumulationvs.glsl" type="vertex" />
-    		<Shader path="Data/Shaders/lightaccumulationps.glsl" type="fragment" />
-    	</Program>
-    	<Program name="SkyboxShader">
-            <Shader path="Data/Shaders/skyboxvs.glsl" type="vertex" />
-            <Shader path="Data/Shaders/skyboxps.glsl" type="fragment" />
-        </Program>
-        <Program name="DebugTexShader">
-            <Shader path="Data/Shaders/debugtexvs.glsl" type="vertex" />
-            <Shader path="Data/Shaders/debugtexps.glsl" type="fragment" />
-        </Program>
-        <Program name="GaussianBlurShader">
-            <Shader path="Data/Shaders/screenquadvs.glsl" type="vertex" />
-            <Shader path="Data/Shaders/gaussianblurps.glsl" type="fragment" />
-        </Program>
-        <Program name="BloomBlendShader">
-            <Shader path="Data/Shaders/screenquadvs.glsl" type="vertex" />
-            <Shader path="Data/Shaders/bloomblendps.glsl" type="fragment" />
-        </Program>
-        <Program name="SSAOShader">
-            <Shader path="Data/Shaders/ssao_geometryvs.glsl" type="vertex" />
-            <Shader path="Data/Shaders/ssao_geometryps.glsl" type="fragment" />
-        </Program>
+
     </Renderer>
     
 </Engine>

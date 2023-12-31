@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
 /***********************************************************************************/
 GLFWwindow* WindowSystem::Init(const pugi::xml_node& windowNode)
 {
@@ -58,6 +60,8 @@ GLFWwindow* WindowSystem::Init(const pugi::xml_node& windowNode)
 
 	glfwMakeContextCurrent(m_window);
 	glfwFocusWindow(m_window);
+	
+	glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
 	glfwSetWindowSizeCallback(m_window, genericInputCallback(Input::GetInstance().windowResized));
 	glfwSetKeyCallback(m_window, genericInputCallback(Input::GetInstance().keyPressed));
 	glfwSetCursorPosCallback(m_window, genericInputCallback(Input::GetInstance().mouseMoved));
@@ -73,10 +77,19 @@ GLFWwindow* WindowSystem::Init(const pugi::xml_node& windowNode)
 	return m_window;
 }
 
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	// make sure the viewport matches the new window dimensions; note that width and 
+	// height will be significantly larger than specified on retina displays.
+	glViewport(0, 0, width, height);
+}
+
 /***********************************************************************************/
 void WindowSystem::SetWindowPos(const std::size_t x, const std::size_t y) const
 {
-	glfwSetWindowPos(m_window, x, y);
+	glfwSetWindowPos(m_window, (int)x, (int)y);
 }
 
 /***********************************************************************************/

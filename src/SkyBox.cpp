@@ -94,7 +94,7 @@ void Skybox::Init(const std::string_view hdrPath, const std::size_t resolution)
 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_envMapFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, envMapRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, resolution, resolution);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, (GLsizei)resolution, (GLsizei)resolution);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, envMapRBO);
 
 	const auto hdrTexture = ResourceManager::GetInstance().LoadHDRI(hdrPath);
@@ -103,7 +103,7 @@ void Skybox::Init(const std::string_view hdrPath, const std::size_t resolution)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
 	for (auto i = 0; i < 6; ++i)
 	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, resolution, resolution, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, (GLsizei)resolution, (GLsizei)resolution, 0, GL_RGB, GL_FLOAT, nullptr);
 	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -134,7 +134,7 @@ void Skybox::Init(const std::string_view hdrPath, const std::size_t resolution)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
-	glViewport(0, 0, resolution, resolution);
+	glViewport(0, 0, (GLsizei)resolution, (GLsizei)resolution);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_envMapFBO);
 	for (auto i = 0; i < 6; ++i)
 	{
@@ -160,7 +160,7 @@ void Skybox::Init(const std::string_view hdrPath, const std::size_t resolution)
 	for (auto i = 0; i < 6; ++i)
 	{
 		// Convoluting a cubemap purposefully scrubs out the fine details so we only need a low-res image (default 32)
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, resolution / 16, resolution / 16, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, (GLsizei)resolution / 16, (GLsizei)resolution / 16, 0, GL_RGB, GL_FLOAT, nullptr);
 	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -170,7 +170,7 @@ void Skybox::Init(const std::string_view hdrPath, const std::size_t resolution)
 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_envMapFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, envMapRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, resolution / 16, resolution / 16);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, (GLsizei)resolution / 16, (GLsizei)resolution / 16);
 
 	// Solve diffuse integral by convolution to create an irradiance cubemap
 	auto irradianceShader{ Graphics::GLShaderProgramFactory::createShaderProgram("Irradiance Shader", {
@@ -184,7 +184,7 @@ void Skybox::Init(const std::string_view hdrPath, const std::size_t resolution)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
 
-	glViewport(0, 0, resolution / 16, resolution / 16);
+	glViewport(0, 0, (GLsizei)resolution / 16, (GLsizei)resolution / 16);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_envMapFBO);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
@@ -202,7 +202,7 @@ void Skybox::Init(const std::string_view hdrPath, const std::size_t resolution)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_prefilterMap);
 	for (auto i = 0; i < 6; ++i)
 	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, resolution / 4, resolution / 4, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, (GLsizei)resolution / 4, (GLsizei)resolution / 4, 0, GL_RGB, GL_FLOAT, nullptr);
 	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -229,8 +229,8 @@ void Skybox::Init(const std::string_view hdrPath, const std::size_t resolution)
 	for (unsigned int mipLevel = 0; mipLevel < maxMipLevels; ++mipLevel)
 	{
 		// Resize framebuffer according to mip-level size.
-		const unsigned int mipWidth = (resolution / 4) * std::pow(0.5f, mipLevel);
-		const unsigned int mipHeight = (resolution / 4) * std::pow(0.5f, mipLevel);
+		const unsigned int mipWidth = (unsigned int)((resolution / 4) * std::pow(0.5f, mipLevel));
+		const unsigned int mipHeight = (unsigned int)((resolution / 4) * std::pow(0.5f, mipLevel));
 		glBindRenderbuffer(GL_RENDERBUFFER, envMapRBO);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
 		glViewport(0, 0, mipWidth, mipHeight);
@@ -254,7 +254,7 @@ void Skybox::Init(const std::string_view hdrPath, const std::size_t resolution)
 	glGenTextures(1, &m_brdfLUT);
 
 	glBindTexture(GL_TEXTURE_2D, m_brdfLUT);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, resolution, resolution, 0, GL_RG, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, (GLsizei)resolution, (GLsizei)resolution, 0, GL_RG, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -263,7 +263,7 @@ void Skybox::Init(const std::string_view hdrPath, const std::size_t resolution)
 	// Reconfigure capture framebuffer object and render screen-space quad with BRDF shader
 	glBindFramebuffer(GL_FRAMEBUFFER, m_envMapFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, envMapRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, resolution, resolution);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, (GLsizei)resolution, (GLsizei)resolution);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_brdfLUT, 0);
 
 	auto brdfShader{ Graphics::GLShaderProgramFactory::createShaderProgram("BRDF Shader", {
@@ -272,7 +272,7 @@ void Skybox::Init(const std::string_view hdrPath, const std::size_t resolution)
 	}).value() };
 
 	brdfShader.Bind();
-	glViewport(0, 0, resolution, resolution);
+	glViewport(0, 0, (GLsizei)resolution, (GLsizei)resolution);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_quadVAO.Bind();
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
