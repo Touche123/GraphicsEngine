@@ -16,6 +16,21 @@ class Camera;
 class SceneBase;
 class GLShaderProgram;
 
+struct SSAO {
+	int KernelSize;
+	float KernelRadius;
+	float KernelBias;
+};
+
+struct RenderPass{
+	bool EnableTextures;
+};
+
+struct RenderSettings {
+	SSAO ssao;
+	RenderPass renderPass;
+};
+
 class RenderSystem {
 	using RenderListIterator = std::vector<ModelPtr>::const_iterator;
 public:
@@ -34,6 +49,8 @@ public:
 	);
 
 	int GetVideoMemUsageKB() const;
+
+	RenderSettings renderSettings;
 
 private:
 	void compileShaders();

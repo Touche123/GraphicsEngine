@@ -160,6 +160,8 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	static auto& gbufferShader = m_shaderCache.at("GBuffer");
 	static auto& deferredShader = m_shaderCache.at("Deferred");
 	static auto& deferredLightBoxShader = m_shaderCache.at("DeferredLightBox");
+
+	static auto& shaderGeometryPass = m_shaderCache.at("GeometryPass");
 	static auto& shaderLightingPass = m_shaderCache.at("LightingPass");
 	static auto& shaderSSAO = m_shaderCache.at("SSAO");
 	static auto& shaderSSAOBlur = m_shaderCache.at("SSAOBlur");
@@ -173,11 +175,13 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	// -----------------------------------------------------------------
 	gBufferFBO.Bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		gbufferShader.Bind();
-		gbufferShader.SetUniform("projection", projection);
-		gbufferShader.SetUniform("view", view);
+		shaderGeometryPass.Bind();
+		shaderGeometryPass.SetUniform("projection", projection);
+		shaderGeometryPass.SetUniform("view", view);
+		shaderGeometryPass.SetUniformi("EnableTextures", renderSettings.renderPass.EnableTextures);
+		
 		// render models
-		renderModelsWithTextures(gbufferShader, renderListBegin, renderListEnd);
+		renderModelsWithTextures(shaderGeometryPass, renderListBegin, renderListEnd);
 		
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -189,6 +193,10 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 		for (unsigned int i = 0; i < 64; i++)
 			shaderSSAO.SetVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
 		shaderSSAO.SetUniform("projection", projection);
+		shaderSSAO.SetUniformi("KernelSize", renderSettings.ssao.KernelSize);
+		shaderSSAO.SetUniformf("Radius", renderSettings.ssao.KernelRadius);
+		shaderSSAO.SetUniformf("Bias", renderSettings.ssao.KernelBias);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, gPosition);
 		glActiveTexture(GL_TEXTURE1);
@@ -206,14 +214,14 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 		glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
 		renderQuad();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+	
 	// 4. Lighting pass
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	shaderLightingPass.Bind();
 	for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
 	{
 		glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(scene.m_staticPointLights[i].Position, 1.0));
-		shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", scene.m_staticPointLights[i].Position);
+		shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", lightPosView);
 		//shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", glm::vec3(camera.GetViewMatrix() * glm::vec4(scene.m_staticPointLights[i].Position, 1.0)));
 		shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Color", scene.m_staticPointLights[i].Color);
 		// update attenuation parameters and calculate radius
@@ -384,9 +392,9 @@ void RenderSystem::renderModelsWithTextures(GLShaderProgram& shader, RenderListI
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, mesh.Material->GetParameterTexture(PBRMaterial::ALBEDO));
 			shader.SetUniformi("texture_diffuse1", 0);
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, mesh.Material->GetParameterTexture(PBRMaterial::METALLIC));
-			shader.SetUniformi("texture_specular1", 1);
+			//glActiveTexture(GL_TEXTURE1);
+			//glBindTexture(GL_TEXTURE_2D, mesh.Material->GetParameterTexture(PBRMaterial::METALLIC));
+			//shader.SetUniformi("texture_specular1", 1);
 			//shader.SetUniformi("texture_specular1", mesh.Material->GetParameterTexture(PBRMaterial::METALLIC));
 			
 
@@ -603,7 +611,6 @@ void RenderSystem::setupSSAOBuffer()
 	ssaoFBO.Init("SSAO");
 	ssaoFBO.Bind();
 
-	unsigned int ssaoColorBuffer, ssaoColorBufferBlur;
 	// SSAO color buffer
 	glGenTextures(1, &ssaoColorBuffer);
 	glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
@@ -650,7 +657,8 @@ void RenderSystem::setupSSAOBuffer()
 		glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, 0.0f); // rotate around z-axis (in tangent space)
 		ssaoNoise.push_back(noise);
 	}
-	unsigned int noiseTexture; glGenTextures(1, &noiseTexture);
+
+	glGenTextures(1, &noiseTexture);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

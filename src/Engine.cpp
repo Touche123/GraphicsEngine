@@ -163,6 +163,7 @@ void Engine::Execute()
 		const auto& renderList{ cullViewFrustum() };
 		m_renderer.Render(m_camera, renderList.cbegin(), renderList.cend(), *m_activeScene, false);
 
+		m_guiSystem.Update(&m_renderer);
 		m_guiSystem.Render(width, height, frameStats);
 
 		m_window.SwapBuffers();

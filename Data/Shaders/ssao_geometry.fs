@@ -7,6 +7,9 @@ in vec2 TexCoords;
 in vec3 FragPos;
 in vec3 Normal;
 
+uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_specular1;
+uniform bool EnableTextures;
 void main()
 {    
     // store the fragment position vector in the first gbuffer texture
@@ -14,5 +17,8 @@ void main()
     // also store the per-fragment normals into the gbuffer
     gNormal = normalize(Normal);
     // and the diffuse per-fragment color
-    gAlbedo.rgb = vec3(0.95);
+    if (EnableTextures)
+        gAlbedo.rgb = texture(texture_diffuse1, TexCoords).rgb;
+    else
+        gAlbedo.rgb = vec3(0.95);
 }
