@@ -1,4 +1,7 @@
 # Graphics Engine
+
+![Alt text](preview.PNG)
+
 ## Vertex Layout
 So far the vertex layout consists of the following:
 1. Position
