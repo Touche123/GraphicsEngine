@@ -57,6 +57,8 @@ private:
 	void setupShadowMap();
 	// Sets projection matrix variable and updates UBO
 	void setProjectionMatrix(const Camera& camera);
+	// Sets Framebuffer for GBuffer
+	void setupGBuffer();
 
 	void renderDepthPass(GLShaderProgram& shader, RenderListIterator renderListBegin, RenderListIterator renderListEnd) const;
 
@@ -103,8 +105,8 @@ private:
 	const float m_vibrance{ 0.1f };
 	const glm::vec4 m_coefficient{ 0.299f, 0.587f, 0.114f, 0.0f };
 
-	//GLFramebuffer gBuffer;
-	unsigned int gBuffer;
+	GLFramebuffer gBuffer;
+	//unsigned int gBuffer;
 	unsigned int gPosition, gNormal, gAlbedo;
 	unsigned int rboDepth;
 

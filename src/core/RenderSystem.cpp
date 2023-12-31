@@ -72,13 +72,14 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 	compileShaders();
 
 	setupScreenquad();
+	setupGBuffer();
 	//setupTextureSamplers();
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	//glDebugMessageCallback(MessageCallback, nullptr);
 	setDefaultState();
-	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_MULTISAMPLE);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -86,48 +87,9 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 
 	// configure g-buffer framebuffer
 	// ------------------------------
-	//gBuffer.Init("GBuffer");
-	//gBuffer.Bind();
+	
 
-	glGenFramebuffers(1, &gBuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-	//unsigned int gPosition, gNormal, gAlbedoSpec;
-	// position color buffer
-	glGenTextures(1, &gPosition);
-	glBindTexture(GL_TEXTURE_2D, gPosition);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
-	// normal color buffer
-	glGenTextures(1, &gNormal);
-	glBindTexture(GL_TEXTURE_2D, gNormal);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
-	// color + specular color buffer
-	glGenTextures(1, &gAlbedo);
-	glBindTexture(GL_TEXTURE_2D, gAlbedo);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
-	// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	glDrawBuffers(3, attachments);
-	// create and attach depth buffer (renderbuffer)
-	unsigned int rboDepth;
-	glGenRenderbuffers(1, &rboDepth);
-	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
-	// finally check if framebuffer is complete
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete!" << std::endl;
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//// Create framebuffer to hold SSAO processing stage
+		//// Create framebuffer to hold SSAO processing stage
 	//unsigned int ssaoFBO, ssaoBlurFBO;
 	//glGenFramebuffers(1, &ssaoFBO);  glGenFramebuffers(1, &ssaoBlurFBO);
 	//glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
@@ -255,7 +217,7 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	//gBuffer.Bind();
 	// 1. geometry pass: render scene's geometry/color data into gbuffer
 	// -----------------------------------------------------------------
-	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer.GetId());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	gbufferShader.Bind();
 	gbufferShader.SetUniform("projection", projection);
@@ -299,7 +261,7 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	
 	// 2.5. Copy content of geometrys depth buffer to default framebuffer's depth buffer
 	//glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.GetId());
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.GetId());
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glBlitFramebuffer(0,0, (GLint)m_width, (GLint)m_height,0,0, (GLint)m_width, (GLint)m_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -594,6 +556,47 @@ void RenderSystem::setProjectionMatrix(const Camera& camera)
 	m_projMatrix = camera.GetProjMatrix((float)m_width, (float)m_height);
 	glBindBuffer(GL_UNIFORM_BUFFER, m_uboMatrices);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), value_ptr(m_projMatrix));
+}
+
+void RenderSystem::setupGBuffer()
+{
+	gBuffer.Init("GBuffer");
+	gBuffer.Bind();
+
+	// position color buffer
+	glGenTextures(1, &gPosition);
+	glBindTexture(GL_TEXTURE_2D, gPosition);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+	// normal color buffer
+	glGenTextures(1, &gNormal);
+	glBindTexture(GL_TEXTURE_2D, gNormal);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+	// color + specular color buffer
+	glGenTextures(1, &gAlbedo);
+	glBindTexture(GL_TEXTURE_2D, gAlbedo);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
+	// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, attachments);
+	// create and attach depth buffer (renderbuffer)
+	unsigned int rboDepth;
+	glGenRenderbuffers(1, &rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_width, m_height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+	// finally check if framebuffer is complete
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RenderSystem::renderDepthPass(GLShaderProgram& shader, RenderListIterator renderListBegin, RenderListIterator renderListEnd) const

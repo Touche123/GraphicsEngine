@@ -117,7 +117,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DebugUtility.cpp" />
     <ClCompile Include="ext\fmt\src\format.cc" />
     <ClCompile Include="ext\glad\include\glad\glad.c" />
     <ClCompile Include="ext\pugixml\pugixml.cpp" />
@@ -152,7 +154,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\core\GUISystem.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
-    <ClCompile Include="MeshPrimitives.h" />
     <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\PBRMaterial.cpp" />
@@ -171,6 +172,7 @@
     <ClCompile Include="src\ViewFrustum.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DebugUtility.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\AABB.h" />
     <ClInclude Include="src\BoundingVolume.h" />
@@ -206,52 +208,21 @@
     <ClInclude Include="src\Utils.h" />
     <ClInclude Include="src\ViewFrustum.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="stdafx.h" />
     <ClInclude Include="tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Data\Shaders\bloomblendps.glsl" />
-    <None Include="Data\Shaders\brdfps.glsl" />
-    <None Include="Data\Shaders\brdfvs.glsl" />
-    <None Include="Data\Shaders\cubemapconverterps.glsl" />
-    <None Include="Data\Shaders\cubemapvs.glsl" />
-    <None Include="Data\Shaders\debugdepthps.glsl" />
-    <None Include="Data\Shaders\debugdepthvs.glsl" />
-    <None Include="Data\Shaders\debugtexps.glsl" />
-    <None Include="Data\Shaders\debugtexvs.glsl" />
-    <None Include="Data\Shaders\deferred_shadingps.glsl" />
-    <None Include="Data\Shaders\deferred_shadingvs.glsl" />
-    <None Include="Data\Shaders\depthps.glsl" />
-    <None Include="Data\Shaders\depthvs.glsl" />
-    <None Include="Data\Shaders\forwardps.glsl" />
-    <None Include="Data\Shaders\forwardvs.glsl" />
-    <None Include="Data\Shaders\gaussianblurps.glsl" />
-    <None Include="Data\Shaders\geometrypassps.glsl" />
-    <None Include="Data\Shaders\geometrypassvs.glsl" />
-    <None Include="Data\Shaders\g_bufferps.glsl" />
-    <None Include="Data\Shaders\g_buffervs.glsl" />
-    <None Include="Data\Shaders\irradianceConvolutionps.glsl" />
-    <None Include="Data\Shaders\lightaccumulationps.glsl" />
-    <None Include="Data\Shaders\lightaccumulationvs.glsl" />
-    <None Include="Data\Shaders\lightcullingcs.glsl" />
-    <None Include="Data\Shaders\lightingpassps.glsl" />
-    <None Include="Data\Shaders\lightingpassvs.glsl" />
-    <None Include="Data\Shaders\PBRps.glsl" />
-    <None Include="Data\Shaders\PBRvs.glsl" />
-    <None Include="Data\Shaders\prefilterps.glsl" />
-    <None Include="Data\Shaders\screenquadvs.glsl" />
-    <None Include="Data\Shaders\shadowdepthps.glsl" />
-    <None Include="Data\Shaders\shadowdepthvs.glsl" />
-    <None Include="Data\Shaders\skyboxps.glsl" />
-    <None Include="Data\Shaders\skyboxvs.glsl" />
-    <None Include="Data\Shaders\ssao_geometryps.glsl" />
-    <None Include="Data\Shaders\ssao_geometryvs.glsl" />
-    <None Include="Data\Shaders\wireframegs.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="GraphicsEngine.rc" />
-  </ItemGroup>
-  <ItemGroup>
     <Xml Include="Data\config.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\Shaders\basic.fs" />
+    <None Include="Data\Shaders\basic.vs" />
+    <None Include="Data\Shaders\deferred_light_box.fs" />
+    <None Include="Data\Shaders\deferred_light_box.vs" />
+    <None Include="Data\Shaders\deferred_shading.fs" />
+    <None Include="Data\Shaders\deferred_shading.vs" />
+    <None Include="Data\Shaders\g_buffer.fs" />
+    <None Include="Data\Shaders\g_buffer.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

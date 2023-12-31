@@ -211,9 +211,9 @@ nk_glfw3_device_create()
         glVertexArrayAttribBinding(dev->vao, uv, 0);
         glVertexArrayAttribBinding(dev->vao, col, 0);
 
-        glVertexArrayAttribFormat(dev->vao, pos, 2, GL_FLOAT, GL_FALSE, vp);
-        glVertexArrayAttribFormat(dev->vao, uv, 2, GL_FLOAT, GL_FALSE, vt);
-        glVertexArrayAttribFormat(dev->vao, col, 4, GL_UNSIGNED_BYTE, GL_TRUE, vc);
+        glVertexArrayAttribFormat(dev->vao, pos, 2, GL_FLOAT, GL_FALSE, (GLuint)vp);
+        glVertexArrayAttribFormat(dev->vao, uv, 2, GL_FLOAT, GL_FALSE, (GLuint)vt);
+        glVertexArrayAttribFormat(dev->vao, col, 4, GL_UNSIGNED_BYTE, GL_TRUE, (GLuint)vc);
 
         glVertexArrayElementBuffer(dev->vao, dev->ebo);
         glVertexArrayVertexBuffer(dev->vao, 0, dev->vbo, 0, vs);
