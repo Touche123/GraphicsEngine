@@ -87,11 +87,29 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 	glViewport(0, 0, width, height);
 
 	static auto& deferredShader = m_shaderCache.at("Deferred");
-	
+	static auto& shaderLightingPass = m_shaderCache.at("LightingPass");
+	static auto& shaderSSAO = m_shaderCache.at("SSAO");
+	static auto& shaderSSAOBlur = m_shaderCache.at("SSAOBlur");
+
 	deferredShader.Bind();
 	deferredShader.SetUniformi("gPosition", 0);
 	deferredShader.SetUniformi("gNormal", 1);
 	deferredShader.SetUniformi("gAlbedoSpec", 2);
+
+	shaderLightingPass.Bind();
+	shaderLightingPass.SetUniformi("gPosition", 0);
+	shaderLightingPass.SetUniformi("gNormal", 1);
+	shaderLightingPass.SetUniformi("gAlbedo", 2);
+	shaderLightingPass.SetUniformi("ssao", 3);
+
+	shaderSSAO.Bind();
+	shaderSSAO.SetUniformi("gPosition", 0);
+	shaderSSAO.SetUniformi("gNormal", 1);
+	shaderSSAO.SetUniformi("texNoise", 2);
+
+	shaderSSAOBlur.Bind();
+	shaderSSAOBlur.SetUniformi("ssaoInput", 0);
+
 	//deferredShader.SetUniformi("ssao", 3);
 
 	// shaderLightingPass	= ssao.vs			ssao_lighting.fs
@@ -142,8 +160,10 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	static auto& gbufferShader = m_shaderCache.at("GBuffer");
 	static auto& deferredShader = m_shaderCache.at("Deferred");
 	static auto& deferredLightBoxShader = m_shaderCache.at("DeferredLightBox");
+	static auto& shaderLightingPass = m_shaderCache.at("LightingPass");
+	static auto& shaderSSAO = m_shaderCache.at("SSAO");
+	static auto& shaderSSAOBlur = m_shaderCache.at("SSAOBlur");
 	
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -151,69 +171,113 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	//gBuffer.Bind();
 	// 1. geometry pass: render scene's geometry/color data into gbuffer
 	// -----------------------------------------------------------------
-	glBindFramebuffer(GL_FRAMEBUFFER, gBufferFBO.GetId());
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	gbufferShader.Bind();
-	gbufferShader.SetUniform("projection", projection);
-	gbufferShader.SetUniform("view", view);
-
-	renderModelsWithTextures(gbufferShader, renderListBegin, renderListEnd);
-	
+	gBufferFBO.Bind();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		gbufferShader.Bind();
+		gbufferShader.SetUniform("projection", projection);
+		gbufferShader.SetUniform("view", view);
+		// render models
+		renderModelsWithTextures(gbufferShader, renderListBegin, renderListEnd);
+		
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	// 2. Lighting pass
+	// 2. generate SSAO texture
+	ssaoFBO.Bind();
+		glClear(GL_COLOR_BUFFER_BIT);
+		shaderSSAO.Bind();
+		// Send kernel + rotation
+		for (unsigned int i = 0; i < 64; i++)
+			shaderSSAO.SetVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
+		shaderSSAO.SetUniform("projection", projection);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, gPosition);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, gNormal);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, noiseTexture);	
+		renderQuad();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// 3. Blur SSAO texture to remove noise
+	ssaoBlurFBO.Bind();
+		glClear(GL_COLOR_BUFFER_BIT);
+		shaderSSAOBlur.Bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+		renderQuad();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// 4. Lighting pass
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	deferredShader.Bind();
+	shaderLightingPass.Bind();
+	for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
+	{
+		glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(scene.m_staticPointLights[i].Position, 1.0));
+		shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", scene.m_staticPointLights[i].Position);
+		//shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", glm::vec3(camera.GetViewMatrix() * glm::vec4(scene.m_staticPointLights[i].Position, 1.0)));
+		shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Color", scene.m_staticPointLights[i].Color);
+		// update attenuation parameters and calculate radius
+		const float constant = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
+		const float linear = 0.7f;
+		const float quadratic = 1.8f;
+		shaderLightingPass.SetUniformf("lights[" + std::to_string(i) + "].Linear", linear);
+		shaderLightingPass.SetUniformf("lights[" + std::to_string(i) + "].Quadratic", quadratic);
+		// then calculate radius of light volume/sphere
+		const float maxBrightness = std::fmaxf(std::fmaxf(scene.m_staticPointLights[i].Color.r, scene.m_staticPointLights[i].Color.g), scene.m_staticPointLights[i].Color.b);
+		float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+		shaderLightingPass.SetUniformf("lights[" + std::to_string(i) + "].Radius", radius);
+	}
+	shaderLightingPass.SetUniformi("NR_LIGHTS", (int)scene.m_staticPointLights.size());
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, gPosition);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, gNormal);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, gAlbedo);
-	deferredShader.SetUniformi("NR_LIGHTS", (int)scene.m_staticPointLights.size());
-	// send light relevant uniforms
-
-	for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
-	{
-		deferredShader.SetVec3("lights[" + std::to_string(i) + "].Position", scene.m_staticPointLights[i].Position);
-		deferredShader.SetVec3("lights[" + std::to_string(i) + "].Color", scene.m_staticPointLights[i].Color);
-		// update attenuation parameters and calculate radius
-		const float constant = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
-		const float linear = 0.7f;
-		const float quadratic = 1.8f;
-		deferredShader.SetUniformf("lights[" + std::to_string(i) + "].Linear", linear);
-		deferredShader.SetUniformf("lights[" + std::to_string(i) + "].Quadratic", quadratic);
-		// then calculate radius of light volume/sphere
-		const float maxBrightness = std::fmaxf(std::fmaxf(scene.m_staticPointLights[i].Color.r, scene.m_staticPointLights[i].Color.g), scene.m_staticPointLights[i].Color.b);
-		float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-		deferredShader.SetUniformf("lights[" + std::to_string(i) + "].Radius", radius);
-	}
-
-	deferredShader.SetVec3("viewPos", camera.GetPosition());
-
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
 	renderQuad();
-	
-	// 2.5. Copy content of geometrys depth buffer to default framebuffer's depth buffer
-	//glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.GetId());
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, gBufferFBO.GetId());
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glBlitFramebuffer(0,0, (GLint)m_width, (GLint)m_height,0,0, (GLint)m_width, (GLint)m_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// // send light relevant uniforms
 
-	deferredLightBoxShader.Bind();
-	deferredLightBoxShader.SetUniform("projection", projection);
-	deferredLightBoxShader.SetUniform("view", view);
-	for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
-	{
-		model = glm::mat4(1.0f);
+	// for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
+	// {
+	// 	deferredShader.SetVec3("lights[" + std::to_string(i) + "].Position", scene.m_staticPointLights[i].Position);
+	// 	deferredShader.SetVec3("lights[" + std::to_string(i) + "].Color", scene.m_staticPointLights[i].Color);
+	// 	// update attenuation parameters and calculate radius
+	// 	const float constant = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
+	// 	const float linear = 0.7f;
+	// 	const float quadratic = 1.8f;
+	// 	deferredShader.SetUniformf("lights[" + std::to_string(i) + "].Linear", linear);
+	// 	deferredShader.SetUniformf("lights[" + std::to_string(i) + "].Quadratic", quadratic);
+	// 	// then calculate radius of light volume/sphere
+	// 	const float maxBrightness = std::fmaxf(std::fmaxf(scene.m_staticPointLights[i].Color.r, scene.m_staticPointLights[i].Color.g), scene.m_staticPointLights[i].Color.b);
+	// 	float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+	// 	deferredShader.SetUniformf("lights[" + std::to_string(i) + "].Radius", radius);
+	// }
+
+	// renderQuad();
+	
+	 // 2.5. Copy content of geometrys depth buffer to default framebuffer's depth buffer
+	 //glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.GetId());
+	 glBindFramebuffer(GL_READ_FRAMEBUFFER, gBufferFBO.GetId());
+	 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	 glBlitFramebuffer(0,0, (GLint)m_width, (GLint)m_height,0,0, (GLint)m_width, (GLint)m_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	 glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	 deferredLightBoxShader.Bind();
+	 deferredLightBoxShader.SetUniform("projection", projection);
+	 deferredLightBoxShader.SetUniform("view", view);
+	 for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
+	 {
+	 	model = glm::mat4(1.0f);
 		
-		model = glm::translate(model, scene.m_staticPointLights[i].Position);
-		model = glm::scale(model, glm::vec3(0.125f));
-		deferredLightBoxShader.SetUniform("model", model);
-		deferredLightBoxShader.SetVec3("lightColor", scene.m_staticPointLights[i].Color);
+	 	model = glm::translate(model, scene.m_staticPointLights[i].Position);
+	 	model = glm::scale(model, glm::vec3(0.125f));
+	 	deferredLightBoxShader.SetUniform("model", model);
+	 	deferredLightBoxShader.SetVec3("lightColor", scene.m_staticPointLights[i].Color);
 		
-		DebugUtility::GetInstance().RenderCube();
-	}
+	 	DebugUtility::GetInstance().RenderCube();
+	 }
 
 	/*glClearColor(0.0, 0.0, 1.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -566,7 +630,6 @@ void RenderSystem::setupSSAOBuffer()
 	// ----------------------
 	std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
 	std::default_random_engine generator;
-	std::vector<glm::vec3> ssaoKernel;
 	for (unsigned int i = 0; i < 64; ++i)
 	{
 		glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, randomFloats(generator));
@@ -582,7 +645,6 @@ void RenderSystem::setupSSAOBuffer()
 
 	// generate noise texture
 	// ----------------------
-	std::vector<glm::vec3> ssaoNoise;
 	for (unsigned int i = 0; i < 16; i++)
 	{
 		glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, 0.0f); // rotate around z-axis (in tangent space)

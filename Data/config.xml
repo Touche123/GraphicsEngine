@@ -24,6 +24,25 @@
 			<Shader path="Data/Shaders/basic.fs" type="fragment" />
 		</Program>
 
+		<Program name="LightingPass">
+			<Shader path="Data/Shaders/ssao.vs" type="vertex" />
+			<Shader path="Data/Shaders/ssao_lighting.fs" type="fragment" />
+		</Program>
+
+		<Program name="GeometryPass">
+			<Shader path="Data/Shaders/ssao_geometry.vs" type="vertex" />
+			<Shader path="Data/Shaders/ssao_geometry.fs" type="fragment" />
+		</Program>
+
+		<Program name="SSAO">
+			<Shader path="Data/Shaders/ssao.vs" type="vertex" />
+			<Shader path="Data/Shaders/ssao.fs" type="fragment" />
+		</Program>
+
+		<Program name="SSAOBlur">
+			<Shader path="Data/Shaders/ssao.vs" type="vertex" />
+			<Shader path="Data/Shaders/ssao_blur.fs" type="fragment" />
+		</Program>
     </Renderer>
     
 </Engine>
