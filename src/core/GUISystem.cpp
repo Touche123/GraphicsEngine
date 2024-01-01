@@ -150,7 +150,7 @@ void GUISystem::Shutdown() const
 }
 
 void GUISystem::Update(RenderSystem* renderSystem)
-{
+{	
 	if (renderSystem == nullptr)
 		return;
 

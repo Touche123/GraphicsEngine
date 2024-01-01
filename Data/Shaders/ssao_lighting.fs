@@ -58,12 +58,11 @@ void main()
     //vec3 color = vec3(0.03) * ambient;
     vec3 color = ambient * lighting;
 
-    //// HDR tonemapping
-    //color = color / (color + vec3(1.0));
-    //// gamma correct
     if (EnableHDR)
     {
-        vec3 result = vec3(1.0) - exp(-color * Exposure);
+        // reinhard tonemapping
+        vec3 rein = color / (color + vec3(1.0));
+        vec3 result = vec3(1.0) - exp(-rein * Exposure);
         result = pow(result, vec3(1.0 / gamma));
         FragColor = vec4(result, 1.0);
     }
