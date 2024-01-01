@@ -32,6 +32,8 @@ int SSAOKernelSize = 64;
 float SSAOKernelRadius = 0.5f;
 float SSAOKernelBias = 0.025f;
 int enableTextures = 1;
+int EnableHDR = 1;
+float HDRExposure = 1.0f;
 
 /***********************************************************************************/
 void GUISystem::Init(GLFWwindow* windowPtr)
@@ -120,6 +122,21 @@ void GUISystem::Render(const int framebufferWidth,
 			nk_layout_row_end(m_nuklearContext);
 		}
 		nk_layout_row_end(m_nuklearContext);
+
+		nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 1);
+		{
+			nk_layout_row_push(m_nuklearContext, 200);
+			nk_checkbox_label(m_nuklearContext, "Enable HDR", &EnableHDR);
+			nk_layout_row_end(m_nuklearContext);
+		}
+		nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
+		{
+			nk_layout_row_push(m_nuklearContext, 220);
+			nk_value_float(m_nuklearContext, "Exposure", HDRExposure);
+			nk_layout_row_push(m_nuklearContext, 110);
+			nk_slider_float(m_nuklearContext, 0.001f, &HDRExposure, 420.0f, 0.001f);
+			nk_layout_row_end(m_nuklearContext);
+		}
 	}
 	nk_end(m_nuklearContext);
 
@@ -141,5 +158,7 @@ void GUISystem::Update(RenderSystem* renderSystem)
 	renderSystem->renderSettings.ssao.KernelRadius= SSAOKernelRadius;
 	renderSystem->renderSettings.ssao.KernelBias = SSAOKernelBias;
 	renderSystem->renderSettings.renderPass.EnableTextures = enableTextures;
+	renderSystem->renderSettings.postProcessing.hdr.EnableExposure = EnableHDR;
+	renderSystem->renderSettings.postProcessing.hdr.Exposure= HDRExposure;
 
 }

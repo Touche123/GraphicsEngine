@@ -43,6 +43,10 @@
 			<Shader path="Data/Shaders/ssao.vs" type="vertex" />
 			<Shader path="Data/Shaders/ssao_blur.fs" type="fragment" />
 		</Program>
+		<Program name="PostProcess_HDR">
+			<Shader path="Data/Shaders/hdr.vs" type="vertex" />
+			<Shader path="Data/Shaders/hdr.fs" type="fragment" />
+		</Program>
     </Renderer>
     
 </Engine>

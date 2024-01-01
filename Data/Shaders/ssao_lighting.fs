@@ -18,9 +18,12 @@ struct Light {
 };
 uniform int NR_LIGHTS;
 uniform Light lights[100];
+uniform bool EnableHDR;
+uniform float Exposure;
 
 void main()
-{             
+{            
+    const float gamma = 2.2; 
     // retrieve data from gbuffer
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
@@ -28,7 +31,7 @@ void main()
     float AmbientOcclusion = texture(ssao, TexCoords).r;
     
     // then calculate lighting as usual
-    vec3 ambient = vec3(0.3 * Diffuse * AmbientOcclusion);
+    vec3 ambient = vec3(0.05 * Diffuse * AmbientOcclusion);
     vec3 lighting  = ambient; 
     vec3 viewDir  = normalize(-FragPos); // viewpos is (0.0.0)
     for(int i = 0; i < NR_LIGHTS; ++i)
@@ -51,5 +54,22 @@ void main()
             lighting += diffuse + specular;
         }
     }
-    FragColor = vec4(lighting, 1.0);
+
+    //vec3 color = vec3(0.03) * ambient;
+    vec3 color = ambient * lighting;
+
+    //// HDR tonemapping
+    //color = color / (color + vec3(1.0));
+    //// gamma correct
+    if (EnableHDR)
+    {
+        vec3 result = vec3(1.0) - exp(-color * Exposure);
+        result = pow(result, vec3(1.0 / gamma));
+        FragColor = vec4(result, 1.0);
+    }
+    else
+    {
+        vec3 result = pow(color, vec3(1.0 / gamma));
+        FragColor = vec4(result, 1.0);
+    }
 }

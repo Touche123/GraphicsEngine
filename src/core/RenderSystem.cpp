@@ -90,6 +90,7 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 	static auto& shaderLightingPass = m_shaderCache.at("LightingPass");
 	static auto& shaderSSAO = m_shaderCache.at("SSAO");
 	static auto& shaderSSAOBlur = m_shaderCache.at("SSAOBlur");
+	static auto& shaderHDR = m_shaderCache.at("PostProcess_HDR");
 
 	deferredShader.Bind();
 	deferredShader.SetUniformi("gPosition", 0);
@@ -110,7 +111,8 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 	shaderSSAOBlur.Bind();
 	shaderSSAOBlur.SetUniformi("ssaoInput", 0);
 
-	//deferredShader.SetUniformi("ssao", 3);
+	shaderHDR.Bind();
+	shaderHDR.SetUniformi("hdrBuffer", 0);
 
 	// shaderLightingPass	= ssao.vs			ssao_lighting.fs
 	// shaderGeometryPass	= ssao_geometry.vs	ssao_geometry.fs
@@ -165,6 +167,7 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	static auto& shaderLightingPass = m_shaderCache.at("LightingPass");
 	static auto& shaderSSAO = m_shaderCache.at("SSAO");
 	static auto& shaderSSAOBlur = m_shaderCache.at("SSAOBlur");
+	static auto& shaderHDR = m_shaderCache.at("PostProcess_HDR");
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -173,7 +176,7 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	//gBuffer.Bind();
 	// 1. geometry pass: render scene's geometry/color data into gbuffer
 	// -----------------------------------------------------------------
-	gBufferFBO.Bind();
+	fboGBuffer.Bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shaderGeometryPass.Bind();
 		shaderGeometryPass.SetUniform("projection", projection);
@@ -186,7 +189,7 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// 2. generate SSAO texture
-	ssaoFBO.Bind();
+	fboSSAO.Bind();
 		glClear(GL_COLOR_BUFFER_BIT);
 		shaderSSAO.Bind();
 		// Send kernel + rotation
@@ -207,7 +210,7 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// 3. Blur SSAO texture to remove noise
-	ssaoBlurFBO.Bind();
+	fboSSAOBlur.Bind();
 		glClear(GL_COLOR_BUFFER_BIT);
 		shaderSSAOBlur.Bind();
 		glActiveTexture(GL_TEXTURE0);
@@ -216,58 +219,54 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
 	// 4. Lighting pass
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	shaderLightingPass.Bind();
-	for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
-	{
-		glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(scene.m_staticPointLights[i].Position, 1.0));
-		shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", lightPosView);
-		//shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", glm::vec3(camera.GetViewMatrix() * glm::vec4(scene.m_staticPointLights[i].Position, 1.0)));
-		shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Color", scene.m_staticPointLights[i].Color);
-		// update attenuation parameters and calculate radius
-		const float constant = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
-		const float linear = 0.7f;
-		const float quadratic = 1.8f;
-		shaderLightingPass.SetUniformf("lights[" + std::to_string(i) + "].Linear", linear);
-		shaderLightingPass.SetUniformf("lights[" + std::to_string(i) + "].Quadratic", quadratic);
-		// then calculate radius of light volume/sphere
-		const float maxBrightness = std::fmaxf(std::fmaxf(scene.m_staticPointLights[i].Color.r, scene.m_staticPointLights[i].Color.g), scene.m_staticPointLights[i].Color.b);
-		float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-		shaderLightingPass.SetUniformf("lights[" + std::to_string(i) + "].Radius", radius);
-	}
-	shaderLightingPass.SetUniformi("NR_LIGHTS", (int)scene.m_staticPointLights.size());
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gPosition);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, gNormal);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, gAlbedo);
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
-	renderQuad();
-	// // send light relevant uniforms
+	//fbolightingPass.Bind();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	    shaderLightingPass.Bind();
+		shaderLightingPass.SetUniformi("EnableHDR", renderSettings.postProcessing.hdr.EnableExposure);
+		shaderLightingPass.SetUniformf("Exposure", renderSettings.postProcessing.hdr.Exposure);
 
-	// for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
-	// {
-	// 	deferredShader.SetVec3("lights[" + std::to_string(i) + "].Position", scene.m_staticPointLights[i].Position);
-	// 	deferredShader.SetVec3("lights[" + std::to_string(i) + "].Color", scene.m_staticPointLights[i].Color);
-	// 	// update attenuation parameters and calculate radius
-	// 	const float constant = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
-	// 	const float linear = 0.7f;
-	// 	const float quadratic = 1.8f;
-	// 	deferredShader.SetUniformf("lights[" + std::to_string(i) + "].Linear", linear);
-	// 	deferredShader.SetUniformf("lights[" + std::to_string(i) + "].Quadratic", quadratic);
-	// 	// then calculate radius of light volume/sphere
-	// 	const float maxBrightness = std::fmaxf(std::fmaxf(scene.m_staticPointLights[i].Color.r, scene.m_staticPointLights[i].Color.g), scene.m_staticPointLights[i].Color.b);
-	// 	float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-	// 	deferredShader.SetUniformf("lights[" + std::to_string(i) + "].Radius", radius);
-	// }
+	    for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
+	    {
+	    	glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(scene.m_staticPointLights[i].Position, 1.0));
+	    	shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", lightPosView);
+	    	//shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", glm::vec3(camera.GetViewMatrix() * glm::vec4(scene.m_staticPointLights[i].Position, 1.0)));
+	    	shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Color", scene.m_staticPointLights[i].Color);
+	    	// update attenuation parameters and calculate radius
+	    	const float constant = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
+	    	const float linear = 0.7f;
+	    	const float quadratic = 1.8f;
+	    	shaderLightingPass.SetUniformf("lights[" + std::to_string(i) + "].Linear", linear);
+	    	shaderLightingPass.SetUniformf("lights[" + std::to_string(i) + "].Quadratic", quadratic);
+	    	// then calculate radius of light volume/sphere
+	    	const float maxBrightness = std::fmaxf(std::fmaxf(scene.m_staticPointLights[i].Color.r, scene.m_staticPointLights[i].Color.g), scene.m_staticPointLights[i].Color.b);
+	    	float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+	    	shaderLightingPass.SetUniformf("lights[" + std::to_string(i) + "].Radius", radius);
+	    }
+	    shaderLightingPass.SetUniformi("NR_LIGHTS", (int)scene.m_staticPointLights.size());
+	    glActiveTexture(GL_TEXTURE0);
+	    glBindTexture(GL_TEXTURE_2D, gPosition);
+	    glActiveTexture(GL_TEXTURE1);
+	    glBindTexture(GL_TEXTURE_2D, gNormal);
+	    glActiveTexture(GL_TEXTURE2);
+	    glBindTexture(GL_TEXTURE_2D, gAlbedo);
+	    glActiveTexture(GL_TEXTURE3);
+	    glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
+	    renderQuad();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);	
 
-	// renderQuad();
-	
+	// Apply postprocessing 	
+	/*glBindFramebuffer(GL_FRAMEBUFFER, 0);	
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		shaderHDR.Bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, lightingPassTexture);
+		shaderHDR.SetUniformi("EnableHDR", renderSettings.postProcessing.hdr.EnableExposure);
+		shaderHDR.SetUniformf("Exposure", renderSettings.postProcessing.hdr.Exposure);
+		renderQuad();*/
+
 	 // 2.5. Copy content of geometrys depth buffer to default framebuffer's depth buffer
-	 //glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.GetId());
-	 glBindFramebuffer(GL_READ_FRAMEBUFFER, gBufferFBO.GetId());
+	 glBindFramebuffer(GL_READ_FRAMEBUFFER, fboGBuffer.GetId());
 	 glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	 glBlitFramebuffer(0,0, (GLint)m_width, (GLint)m_height,0,0, (GLint)m_width, (GLint)m_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	 glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -566,8 +565,8 @@ void RenderSystem::setProjectionMatrix(const Camera& camera)
 
 void RenderSystem::setupGBuffer()
 {
-	gBufferFBO.Init("GBuffer");
-	gBufferFBO.Bind();
+	fboGBuffer.Init("GBuffer");
+	fboGBuffer.Bind();
 
 	// position color buffer
 	glGenTextures(1, &gPosition);
@@ -586,7 +585,7 @@ void RenderSystem::setupGBuffer()
 	// color + specular color buffer
 	glGenTextures(1, &gAlbedo);
 	glBindTexture(GL_TEXTURE_2D, gAlbedo);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
@@ -608,8 +607,8 @@ void RenderSystem::setupGBuffer()
 void RenderSystem::setupSSAOBuffer()
 {
 	// Create framebuffer to hold SSAO processing stage
-	ssaoFBO.Init("SSAO");
-	ssaoFBO.Bind();
+	fboSSAO.Init("SSAO");
+	fboSSAO.Bind();
 
 	// SSAO color buffer
 	glGenTextures(1, &ssaoColorBuffer);
@@ -621,8 +620,8 @@ void RenderSystem::setupSSAOBuffer()
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "SSAO Framebuffer not complete!" << std::endl;
 	// and blur stage
-	ssaoBlurFBO.Init("SSAO Blur");
-	ssaoBlurFBO.Bind();
+	fboSSAOBlur.Init("SSAO Blur");
+	fboSSAOBlur.Bind();
 	glGenTextures(1, &ssaoColorBufferBlur);
 	glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_width, m_height, 0, GL_RED, GL_FLOAT, NULL);

@@ -26,9 +26,17 @@ struct RenderPass{
 	bool EnableTextures;
 };
 
+struct HDR {
+	bool EnableExposure;
+	float Exposure;
+};
+struct PostProcessing {
+	HDR hdr;
+};
 struct RenderSettings {
 	SSAO ssao;
 	RenderPass renderPass;
+	PostProcessing postProcessing;
 };
 
 class RenderSystem {
@@ -124,11 +132,12 @@ private:
 	const float m_vibrance{ 0.1f };
 	const glm::vec4 m_coefficient{ 0.299f, 0.587f, 0.114f, 0.0f };
 
-	GLFramebuffer gBufferFBO;
-	GLFramebuffer ssaoFBO;
-	GLFramebuffer ssaoBlurFBO;
+	GLFramebuffer fboGBuffer;
+	GLFramebuffer fboSSAO;
+	GLFramebuffer fboSSAOBlur;
+	GLFramebuffer fbolightingPass;
 
-	//unsigned int gBuffer;
+	unsigned int lightingPassTexture;
 	unsigned int gPosition, gNormal, gAlbedo;
 	unsigned int rboDepth;
 
