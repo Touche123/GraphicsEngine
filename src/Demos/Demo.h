@@ -11,4 +11,5 @@ public:
 	MAKE_MOVE_ONLY(Demo);
 
 	void Init(const std::string_view sceneName) override;
+	void Update(const double dt) override;
 };

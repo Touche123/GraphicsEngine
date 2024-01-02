@@ -47,6 +47,13 @@
 			<Shader path="Data/Shaders/hdr.vs" type="vertex" />
 			<Shader path="Data/Shaders/hdr.fs" type="fragment" />
 		</Program>
+
+		<Program name="Shadows">
+			<Shader path="Data/Shaders/shadowShader.vs" type="vertex" />
+			<Shader path="Data/Shaders/shadowShader.fs" type="fragment" />
+			<Shader path="Data/Shaders/shadowShader.gs" type="geometry" />
+		</Program>
+
     </Renderer>
     
 </Engine>

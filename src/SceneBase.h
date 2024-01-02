@@ -25,7 +25,7 @@ public:
 
 	MAKE_MOVE_ONLY(SceneBase)
 
-		virtual void Init(const std::string_view sceneName);
+	virtual void Init(const std::string_view sceneName);
 	virtual void Update(const double dt);
 
 	auto GetName() const noexcept { return m_sceneName; }
@@ -48,5 +48,7 @@ private:
 	std::vector<StaticSpotLight> m_staticSpotLights;
 
 	std::vector<ModelPtr> m_sceneModels;
+
+	bool direction;
 };
 

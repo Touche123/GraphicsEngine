@@ -136,6 +136,7 @@ private:
 	GLFramebuffer fboSSAO;
 	GLFramebuffer fboSSAOBlur;
 	GLFramebuffer fbolightingPass;
+	GLFramebuffer fboShadows;
 
 	unsigned int lightingPassTexture;
 	unsigned int gPosition, gNormal, gAlbedo;
@@ -144,9 +145,14 @@ private:
 	std::vector<glm::vec3> ssaoKernel;
 	std::vector<glm::vec3> ssaoNoise;
 	unsigned int noiseTexture;
+	unsigned int depthCubeMap;
 	unsigned int ssaoColorBuffer, ssaoColorBufferBlur;
 	// lighting info
 	// -------------
 	std::vector<glm::vec3> lightPositions;
     std::vector<glm::vec3> lightColors;
+
+	// Shadow Info
+	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	std::vector<glm::mat4> shadowTransforms;
 };

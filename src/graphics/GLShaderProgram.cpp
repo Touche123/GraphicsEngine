@@ -122,10 +122,13 @@ void GLShaderProgram::getUniforms()
 
 		std::string nameStr = std::string(name);
 
-		if (num > 1)
+		if (num > 1 && m_programID != 13)
 			nameStr = nameStr.erase(name_len - 3);
 
+		std::cout << "Shader: " << m_programName << " - " << "Pushback uniform: " << nameStr << "\n";
 		// TODO: Filter out uniform block members using glGetActiveUniformsiv
 		m_uniforms.try_emplace(nameStr, glGetUniformLocation(m_programID, name));
 	}
+
+	std::cout << "###############################################\n";
 }

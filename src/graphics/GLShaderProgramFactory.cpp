@@ -63,7 +63,7 @@ namespace Graphics
 
 		std::vector<GLchar> infoLog(0, logLength);
 		glGetProgramInfoLog(id, logLength, nullptr, infoLog.data());
-		//std::cout << fmt::format("{}", std::string(infoLog.cbegin(), infoLog.cend())) << std::endl;
+		std::cout << fmt::format("{}", std::string(infoLog.cbegin(), infoLog.cend())) << std::endl;
 
 		return success == GL_TRUE;
 	}

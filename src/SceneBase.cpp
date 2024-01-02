@@ -14,6 +14,18 @@ void SceneBase::Init(const std::string_view sceneName)
 /***********************************************************************************/
 void SceneBase::Update(const double dt)
 {
+	for (auto& light : m_staticPointLights)
+	{
+		if (direction)
+		{
+			light.Position.x += 2 * dt;
+		} else
+			light.Position.x -= 2 * dt;
+		
+		if (light.Position.x <= -10 || light.Position.x >= 10)
+			direction = !direction;
+		
+	}
 }
 
 /***********************************************************************************/

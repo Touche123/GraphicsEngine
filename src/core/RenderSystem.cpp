@@ -21,19 +21,19 @@
 #define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
 
 /***********************************************************************************/
-//void GLAPIENTRY
-//MessageCallback( GLenum source,
-//                 GLenum type,
-//                 GLuint id,
-//                 GLenum severity,
-//                 GLsizei length,
-//                 const GLchar* message,
-//                 const void* userParam )
-//{
-//  std::fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-//           ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
-//            type, severity, message );
-//}
+void GLAPIENTRY
+MessageCallback( GLenum source,
+                GLenum type,
+                GLuint id,
+                GLenum severity,
+                GLsizei length,
+                const GLchar* message,
+                const void* userParam )
+{
+ std::fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+          ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+           type, severity, message );
+}
 
 /***********************************************************************************/
 float ourLerp(float a, float b, float f)
@@ -78,7 +78,7 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	//glDebugMessageCallback(MessageCallback, nullptr);
+	glDebugMessageCallback(MessageCallback, nullptr);
 	setDefaultState();
 	//glEnable(GL_MULTISAMPLE);
 
@@ -102,6 +102,7 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 	shaderLightingPass.SetUniformi("gNormal", 1);
 	shaderLightingPass.SetUniformi("gAlbedo", 2);
 	shaderLightingPass.SetUniformi("ssao", 3);
+	shaderLightingPass.SetUniformi("depthMap", 4);
 
 	shaderSSAO.Bind();
 	shaderSSAO.SetUniformi("gPosition", 0);
@@ -113,6 +114,31 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 
 	shaderHDR.Bind();
 	shaderHDR.SetUniformi("hdrBuffer", 0);
+
+	fboShadows.Init("Shadows");
+	fboShadows.Bind();
+	glGenTextures(1, &depthCubeMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubeMap);
+	for (unsigned int i = 0; i < 6; ++i)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0 , GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);	
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);	
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);	
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);	
+
+	// attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, fboShadows.GetId());
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubeMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		printf(" Failed to initialize the shadow frame buffer!\n");
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// shaderLightingPass	= ssao.vs			ssao_lighting.fs
 	// shaderGeometryPass	= ssao_geometry.vs	ssao_geometry.fs
@@ -137,8 +163,8 @@ void RenderSystem::Update(const Camera& camera)
 
 	// Update view matrix inside UBO
 	const auto view = camera.GetViewMatrix();
-	glBindBuffer(GL_UNIFORM_BUFFER, m_uboMatrices);
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
+	//glBindBuffer(GL_UNIFORM_BUFFER, m_uboMatrices);
+	//glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
 }
 
 /***********************************************************************************/
@@ -154,6 +180,7 @@ void RenderSystem::Shutdown() const
 void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBegin, RenderListIterator renderListEnd, const SceneBase& scene, const bool globalWireframe)
 {
 	setDefaultState();
+	glDepthMask(true);
 	glm::mat4 projection = camera.GetProjMatrix((float)m_width, (float)m_height);
 	glm::mat4 view = camera.GetViewMatrix();
 	glm::mat4 model = glm::mat4(1.0f);
@@ -168,12 +195,55 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	static auto& shaderSSAO = m_shaderCache.at("SSAO");
 	static auto& shaderSSAOBlur = m_shaderCache.at("SSAOBlur");
 	static auto& shaderHDR = m_shaderCache.at("PostProcess_HDR");
-	
+	static auto& shaderShadows = m_shaderCache.at("Shadows");
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//gBuffer.Bind();
+	// 0: Create depth cubemap transformation matrices
+	float near_plane = 1.0f;
+	float far_plane = 25.0f;
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
+	/*for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
+	{
+		glm::vec3 lightPos = scene.m_staticPointLights[i].Position;
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	}*/
+
+	// render scene to depth cubemap
+	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+	fboShadows.Bind();
+	glClear(GL_DEPTH_BUFFER_BIT);
+	shaderShadows.Bind();
+
+	for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
+	{
+		shadowTransforms.clear();
+		glm::vec3 lightPos = scene.m_staticPointLights[i].Position;
+		shaderShadows.SetUniformf("far_plane", far_plane);
+		shaderShadows.SetVec3("lightPos", lightPos);
+		
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+
+		for (unsigned int face = 0; face < 6; ++face)
+		{
+			shaderShadows.SetUniform("shadowData[" + std::to_string(face) + "].mat", shadowTransforms[face]);
+		}
+		renderModelsNoTextures(shaderShadows, renderListBegin, renderListEnd);
+		//renderModelsWithTextures(shaderShadows, renderListBegin, renderListEnd);
+	}
+	glViewport(0,0, m_width, m_height);
+
 	// 1. geometry pass: render scene's geometry/color data into gbuffer
 	// -----------------------------------------------------------------
 	fboGBuffer.Bind();
@@ -222,14 +292,31 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	//fbolightingPass.Bind();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+
 	    shaderLightingPass.Bind();
 		shaderLightingPass.SetUniformi("EnableHDR", renderSettings.postProcessing.hdr.EnableExposure);
 		shaderLightingPass.SetUniformf("Exposure", renderSettings.postProcessing.hdr.Exposure);
+		shaderLightingPass.SetUniformf("far_plane", far_plane);
+		shaderLightingPass.SetUniformi("EnableShadows", 1);
+		shaderLightingPass.SetVec3("cameraPosition", camera.GetPosition());
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, gPosition);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, gNormal);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, gAlbedo);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubeMap);
+		
 
 	    for (unsigned int i = 0; i < scene.m_staticPointLights.size(); i++)
 	    {
 	    	glm::vec3 lightPosView = glm::vec3(camera.GetViewMatrix() * glm::vec4(scene.m_staticPointLights[i].Position, 1.0));
-	    	shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", lightPosView);
+	    	shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", glm::vec3(scene.m_staticPointLights[i].Position));
 	    	//shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Position", glm::vec3(camera.GetViewMatrix() * glm::vec4(scene.m_staticPointLights[i].Position, 1.0)));
 	    	shaderLightingPass.SetVec3("lights[" + std::to_string(i) + "].Color", scene.m_staticPointLights[i].Color);
 	    	// update attenuation parameters and calculate radius
@@ -244,14 +331,7 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	    	shaderLightingPass.SetUniformf("lights[" + std::to_string(i) + "].Radius", radius);
 	    }
 	    shaderLightingPass.SetUniformi("NR_LIGHTS", (int)scene.m_staticPointLights.size());
-	    glActiveTexture(GL_TEXTURE0);
-	    glBindTexture(GL_TEXTURE_2D, gPosition);
-	    glActiveTexture(GL_TEXTURE1);
-	    glBindTexture(GL_TEXTURE_2D, gNormal);
-	    glActiveTexture(GL_TEXTURE2);
-	    glBindTexture(GL_TEXTURE_2D, gAlbedo);
-	    glActiveTexture(GL_TEXTURE3);
-	    glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
+	    
 	    renderQuad();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);	
 
@@ -312,8 +392,8 @@ int RenderSystem::GetVideoMemUsageKB() const
 void RenderSystem::UpdateView(const Camera& camera)
 {
 	m_projMatrix = camera.GetProjMatrix((float)m_width, (float)m_height);
-	glBindBuffer(GL_UNIFORM_BUFFER, m_uboMatrices);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(m_projMatrix));
+	//glBindBuffer(GL_UNIFORM_BUFFER, m_uboMatrices);
+	//glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(m_projMatrix));
 }
 
 /***********************************************************************************/
@@ -368,10 +448,10 @@ void RenderSystem::setDefaultState()
 /***********************************************************************************/
 void RenderSystem::renderModelsWithTextures(GLShaderProgram& shader, RenderListIterator renderListBegin, RenderListIterator renderListEnd) const
 {
-	glBindSampler(m_samplerPBRTextures, 3);
-	glBindSampler(m_samplerPBRTextures, 4);
-	glBindSampler(m_samplerPBRTextures, 5);
-	glBindSampler(m_samplerPBRTextures, 6);
+	//glBindSampler(m_samplerPBRTextures, 3);
+	//glBindSampler(m_samplerPBRTextures, 4);
+	//glBindSampler(m_samplerPBRTextures, 5);
+	//glBindSampler(m_samplerPBRTextures, 6);
 	// glBindSampler(m_samplerPBRTextures, 7);
 
 	auto begin{ renderListBegin };
