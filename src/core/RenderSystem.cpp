@@ -41,10 +41,10 @@ float ourLerp(float a, float b, float f)
 	return a + f * (b - a);
 }
 
-void RenderSystem::Init(const pugi::xml_node& rendererNode)
+void RenderSystem::Init(const pugi::xml_node& renderNode)
 {
 
-	m_rendererNode = rendererNode;
+	m_rendererNode = renderNode;
 
 	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
 	{
@@ -63,13 +63,19 @@ void RenderSystem::Init(const pugi::xml_node& rendererNode)
 	std::cout << "OpenGL Renderer: " << glGetString(GL_RENDERER) << '\n';
 #endif
 
-	const auto width = rendererNode.attribute("width").as_uint();
-	const auto height = rendererNode.attribute("height").as_uint();
+	const auto width = m_rendererNode.attribute("width").as_uint();
+	const auto height = m_rendererNode.attribute("height").as_uint();
 
 	m_width = width;
 	m_height = height;
 
 	compileShaders();
+	auto lightNode = m_rendererNode.child("Lighting");
+	float r = lightNode.child("Ambient").attribute("r").as_float();
+	float g = lightNode.child("Ambient").attribute("g").as_float();
+	float b = lightNode.child("Ambient").attribute("b").as_float();
+	ambientStrength = lightNode.child("Ambient").attribute("strength").as_float();
+	ambient = glm::vec3(r, g, b) * ambientStrength;
 
 	setupScreenquad();
 	setupGBuffer();
@@ -239,6 +245,7 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	forward_renderer.SetUniform("lightPos", lightPos);
 	forward_renderer.SetUniform("lightSpaceMatrix", m_lightSpaceMatrix);
 	forward_renderer.SetUniform("lightColor", scene.m_staticDirectionalLights[0].Color);
+	forward_renderer.SetUniform("ambient", ambient * renderSettings.ambientStrength);
 
 	renderModelsWithTextures(forward_renderer, renderListBegin, renderListEnd);
 

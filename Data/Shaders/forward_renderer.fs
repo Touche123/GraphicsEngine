@@ -14,6 +14,7 @@ uniform sampler2D shadowMap;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 lightColor;
+uniform vec3 ambient;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
@@ -62,7 +63,7 @@ void main()
     vec3 normal = normalize(fs_in.Normal);
     
     // ambient
-    vec3 ambient = 0.3 * lightColor;
+    //vec3 ambient = 0.3 * lightColor;
     // diffuse
     vec3 lightDir = normalize(lightPos - fs_in.FragPos);
     float diff = max(dot(lightDir, normal), 0.0);

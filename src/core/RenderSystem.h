@@ -37,6 +37,7 @@ struct RenderSettings {
 	SSAO ssao;
 	RenderPass renderPass;
 	PostProcessing postProcessing;
+	float ambientStrength;
 };
 
 class RenderSystem {
@@ -61,6 +62,9 @@ public:
 	RenderSettings renderSettings;
 
 private:
+	glm::vec3 ambient;
+	float ambientStrength;
+
 	void compileShaders();
 	//
 	void queryHardwareCaps();
