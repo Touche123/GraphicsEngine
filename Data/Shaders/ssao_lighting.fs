@@ -17,6 +17,7 @@ struct Light {
     float Quadratic;
     float Radius;
 };
+
 uniform int NR_LIGHTS;
 uniform Light lights[100];
 uniform bool EnableHDR;
@@ -28,33 +29,32 @@ uniform float far_plane;
 uniform bool EnableShadows;
 
 // array of offset direction for sampling
-vec3 gridSamplingDisk[20] = vec3[]
+vec3 sampleOffsetDirections[20] = vec3[]
 (
-    vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
    vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
    vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
    vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
    vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
 
-float ShadowCalculation(vec3 fragPos, vec3 lightPos)
+float ShadowCalculation(vec3 fragToLight, float viewDistance)
 {
-    vec3 fragToLight = fragPos - lightPos; 
-    float currentDepth = length(fragToLight);
     float shadow = 0.0;
-    float bias = 0.15;
-    int samples = 20;
-    float viewDistance = length(cameraPosition - fragPos);
-    float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
-    float closestDepth = 0.0;
+    float bias = 0.0;
+    int samples = 8;
+    float fraction = 1.0/float(samples);
+    float diskRadius = (1.0 + viewDistance / far_plane) / 25.0;
+    float currentDepth = (length(fragToLight) - bias);
+
     for(int i = 0; i < samples; ++i)
     {
-        closestDepth = texture(depthMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        float closestDepth = texture(depthMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
         closestDepth *= far_plane; // undo mapping [0;1]
-        if (currentDepth - bias > closestDepth)
-            shadow += 1.0;
+        if (currentDepth > closestDepth)
+            shadow += fraction;
     }
-    shadow /= float(samples);
+
     return shadow;
 }
 
@@ -70,7 +70,8 @@ void main()
     // then calculate lighting as usual
     vec3 ambient = vec3(0.05 * Diffuse * AmbientOcclusion);
     vec3 lighting  = ambient; 
-    vec3 viewDir  = normalize(-FragPos); // viewpos is (0.0.0)
+    vec3 viewDir  = normalize(cameraPosition - FragPos); // viewpos is (0.0.0)
+
     for(int i = 0; i < NR_LIGHTS; ++i)
     {
         float distance = length(lights[i].Position - FragPos);
@@ -81,16 +82,22 @@ void main()
             vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * lights[i].Color;
             // specular
             vec3 halfwayDir = normalize(lightDir + viewDir);  
-            float spec = pow(max(dot(Normal, halfwayDir), 0.0), 8.0);
+            float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0);
             vec3 specular = lights[i].Color * spec;
             // attenuation
             //float distance = length(light.Position - FragPos);
             float attenuation = 1.0 / (1.0 + lights[i].Linear * distance + lights[i].Quadratic * distance * distance);
             diffuse *= attenuation;
             specular *= attenuation;
-            float shadow = 0.0; 
-            if (EnableShadows)
-                shadow = ShadowCalculation(FragPos, lights[i].Position);
+            float shadow = 0.0;
+
+            float viewDistance = length(cameraPosition - FragPos);
+
+            if (EnableShadows) {
+                vec3 fragToLight = FragPos - lights[i].Position;
+                shadow = ShadowCalculation(fragToLight, viewDistance);
+            }
+                
 
             lighting += diffuse + specular;
             lighting *= (1.0 - shadow);

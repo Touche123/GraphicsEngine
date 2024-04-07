@@ -9,6 +9,16 @@
 			<Shader path="Data/Shaders/g_buffer.fs" type="fragment" />
 		</Program>
 
+		<Program name="directional_shadow_mapping">
+			<Shader path="Data/Shaders/directional_shadow_mapping.vs" type="vertex" />
+			<Shader path="Data/Shaders/directional_shadow_mapping.fs" type="fragment" />
+		</Program>
+		
+		<Program name="forward_renderer">
+			<Shader path="Data/Shaders/forward_renderer.vs" type="vertex" />
+			<Shader path="Data/Shaders/forward_renderer.fs" type="fragment" />
+		</Program>
+		
 		<Program name="Deferred">
 			<Shader path="Data/Shaders/deferred_shading.vs" type="vertex" />
 			<Shader path="Data/Shaders/deferred_shading.fs" type="fragment" />

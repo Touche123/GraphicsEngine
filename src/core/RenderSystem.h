@@ -73,13 +73,13 @@ private:
 	// Render NDC screenquad
 	void renderQuad() const;
 	// Renders shadowmap
-	void renderShadowMap(const SceneBase& scene, RenderListIterator renderListBegin, RenderListIterator renderListEnd);
+	void renderDirectionalShadowMapping(const SceneBase& scene, RenderListIterator renderListBegin, RenderListIterator renderListEnd);
 	// Configure NDC screenquad
 	void setupScreenquad();
 	// Setup texture samplers
 	void setupTextureSamplers();
 	// Setup FBO, resolution, etc for shadow mapping
-	void setupShadowMap();
+	void setupDirectionalShadowMapping();
 	// Sets projection matrix variable and updates UBO
 	void setProjectionMatrix(const Camera& camera);
 	// Sets Framebuffer for GBuffer
@@ -87,6 +87,7 @@ private:
 	// Sets framebuffer for ssao computation
 	void setupSSAOBuffer();
 
+	void renderDepthBuffer(const Camera& camera, RenderListIterator renderListBegin, RenderListIterator renderListEnd);
 	void renderDepthPass(GLShaderProgram& shader, RenderListIterator renderListBegin, RenderListIterator renderListEnd) const;
 
 	pugi::xml_node m_rendererNode;
@@ -106,7 +107,7 @@ private:
 	GLuint m_samplerPBRTextures{ 0 };
 
 	// Shadow mapping
-	GLuint m_shadowMapResolution{ 1024 }, m_shadowDepthTexture{ 0 }, m_shadowColorTexture{ 0 };
+	GLuint m_shadowMapResolution{ 4096 }, m_shadowDepthTexture{ 0 }, m_shadowColorTexture{ 0 };
 	GLFramebuffer m_shadowFBO;
 
 	// Depth frame Buffer

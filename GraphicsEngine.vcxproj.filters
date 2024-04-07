@@ -243,5 +243,41 @@
     <None Include="Data\Shaders\g_buffer.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="Data\Shaders\shadowShader.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\shadowShader.gs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\shadowShader.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\ssao_lighting.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\ssao.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\ssao.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\ssao_geometry.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\ssao_geometry.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\forward_renderer.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\forward_renderer.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\directional_shadow_mapping.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\directional_shadow_mapping.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

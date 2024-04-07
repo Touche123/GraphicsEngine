@@ -9,18 +9,18 @@ out vec3 Normal;
 
 uniform bool invertedNormals;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+uniform mat4 M;
+uniform mat4 VP;
 
 void main()
 {
-    vec4 viewPos = view * model * vec4(aPos, 1.0);
-    FragPos = viewPos.xyz; 
+    gl_Position = VP * M * vec4(aPos, 1.0);
+    vec4 worldPos = M * vec4(aPos, 1.0);
+    FragPos = worldPos.xyz;
     TexCoords = aTexCoords;
     
-    mat3 normalMatrix = transpose(inverse(mat3(view * model)));
-    Normal = normalMatrix * (invertedNormals ? -aNormal : aNormal);
+    mat3 normalMatrix = transpose(inverse(mat3(M)));
+    Normal = normalMatrix * aNormal;
     
-    gl_Position = projection * viewPos;
+    
 }

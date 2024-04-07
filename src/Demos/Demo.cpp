@@ -1,6 +1,7 @@
 #include "Demo.h"
 
 #include "../ResourceManager.h"
+#include <fileapi.h>
 
 Demo::Demo()
 {
@@ -10,9 +11,11 @@ Demo::Demo()
 void Demo::Init(const std::string_view sceneName)
 {
 	SceneBase::Init(sceneName);
+	AddLight(StaticDirectionalLight({ 1.0f, 1.0f, 0.95f }, { 25.0f, 50.0f, 10.0f }));
+	AddLight(StaticPointLight({ 255, 255, 255 }, { 0, 4, 0 }, { 0,0,0 }));
 
 	//auto sponza = ResourceManager::GetInstance().GetModel("Sponza", "Data/Models/crytek-sponza/sponza.obj");
-	auto sponza = ResourceManager::GetInstance().GetModel("Sponza", "Data/Models/gltf/sponza/Sponza.gltf");
+	auto sponza = ResourceManager::GetInstance().GetModel("Sponza", "Data/Models/gltf/sponza2/Sponza.gltf");
 	sponza->Translate(glm::vec3(0.0f));
 	sponza->Scale(glm::vec3(0.01f));
 	AddModel(sponza);
@@ -28,9 +31,6 @@ void Demo::Init(const std::string_view sceneName)
 	AddModel(defaultPlane);
 
 	// Sun
-	AddLight(StaticDirectionalLight({ 5.0f, 5.0f, 4.5f }, { 25.0f, 50.0f, 10.0f }));
-	AddLight(StaticPointLight({ 255, 255, 255 }, { 0, 4, 0}));
-
 	//srand(13);
 	//for (unsigned int i = 0; i < 1; i++)
 	//{
@@ -48,11 +48,11 @@ void Demo::Init(const std::string_view sceneName)
 
 	//	AddLight(StaticPointLight({ rColor, gColor, bColor}, { xPos, yPos, zPos }));
 	//}
-
-	
 }
 
 void Demo::Update(const double dt)
 {
 	SceneBase::Update(dt);
+
+
 }

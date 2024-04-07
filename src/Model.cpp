@@ -95,6 +95,7 @@ bool Model::loadModel(const std::string_view Path, const bool flipWindingOrder, 
 		scene = importer.ReadFile(Path.data(), aiProcess_Triangulate |
 			aiProcess_JoinIdenticalVertices |
 			aiProcess_GenUVCoords |
+			aiProcess_GenNormals |
 			aiProcess_SortByPType |
 			aiProcess_RemoveRedundantMaterials |
 			aiProcess_FindInvalidData |
@@ -242,7 +243,6 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, const bool loadMater
 			{
 				return Mesh(vertices, indices, cachedMaterial.value());
 			}
-
 			// Get the first texture for each texture type we need
 			// since there could be multiple textures per type
 			aiString albedoPath;
@@ -258,6 +258,11 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, const bool loadMater
 
 			aiString normalPath;
 			mat->GetTexture(aiTextureType_HEIGHT, 0, &normalPath);
+
+			if (normalPath.length > 0)
+			{
+				std::cout << "Normal map exists!! Names: " << normalPath.C_Str() << "\n";
+			}
 
 			aiString roughnessPath;
 			mat->GetTexture(aiTextureType_SHININESS, 0, &roughnessPath);

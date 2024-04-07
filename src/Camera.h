@@ -44,7 +44,7 @@ private:
 	glm::vec3 m_right;
 	const glm::vec3 m_worldUp{ 0.0f, 1.0f, 0.0f };
 
-	float m_near = 0.1f, m_far = 100.0f;
+	float m_near = 0.1f, m_far = 1000.0f;
 
 	// Eular Angles
 	float m_yaw{ -90.0f };

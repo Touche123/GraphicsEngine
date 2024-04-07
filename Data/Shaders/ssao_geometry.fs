@@ -17,8 +17,11 @@ void main()
     // also store the per-fragment normals into the gbuffer
     gNormal = normalize(Normal);
     // and the diffuse per-fragment color
-    if (EnableTextures)
+    if (EnableTextures) {
         gAlbedo.rgb = texture(texture_diffuse1, TexCoords).rgb;
+        //gAlbedo.a = texture(texture_specular1, TexCoords).r;
+    }
+        
     else
         gAlbedo.rgb = vec3(0.95);
 }

@@ -221,8 +221,20 @@
     <None Include="Data\Shaders\deferred_light_box.vs" />
     <None Include="Data\Shaders\deferred_shading.fs" />
     <None Include="Data\Shaders\deferred_shading.vs" />
+    <None Include="Data\Shaders\directional_shadow_mapping.fs" />
+    <None Include="Data\Shaders\directional_shadow_mapping.vs" />
+    <None Include="Data\Shaders\forward_renderer.fs" />
+    <None Include="Data\Shaders\forward_renderer.vs" />
     <None Include="Data\Shaders\g_buffer.fs" />
     <None Include="Data\Shaders\g_buffer.vs" />
+    <None Include="Data\Shaders\shadowShader.fs" />
+    <None Include="Data\Shaders\shadowShader.gs" />
+    <None Include="Data\Shaders\shadowShader.vs" />
+    <None Include="Data\Shaders\ssao.fs" />
+    <None Include="Data\Shaders\ssao.vs" />
+    <None Include="Data\Shaders\ssao_geometry.fs" />
+    <None Include="Data\Shaders\ssao_geometry.vs" />
+    <None Include="Data\Shaders\ssao_lighting.fs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
