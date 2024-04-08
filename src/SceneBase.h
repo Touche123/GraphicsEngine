@@ -14,11 +14,13 @@
 // Forward Declarations
 class Engine;
 class RenderSystem;
+class GUISystem;
 
 /***********************************************************************************/
 class SceneBase {
 	friend class Engine;
 	friend class RenderSystem;
+	friend class GUISystem;
 public:
 	SceneBase() = default;
 	virtual ~SceneBase() = default;

@@ -22,6 +22,7 @@
 #include <nuklear/nuklear.h>
 #include <nuklear/nuklear_glfw_gl4.h>
 #include "RenderSystem.h"
+#include "../SceneBase.h"
 
 // https://github.com/Immediate-Mode-UI/Nuklear/blob/master/demo/glfw_opengl4/main.c
 
@@ -35,6 +36,14 @@ int enableTextures = 1;
 int EnableHDR = 1;
 float HDRExposure = 1.0f;
 float ambientStrength = 1.0f;
+
+bool directionalLightRotXChanged = false;
+bool directionalLightRotYChanged = false;
+bool directionalLightRotZChanged = false;
+float directionalLightRotX = 0.0f;
+float directionalLightRotY = 0.0f;
+float directionalLightRotZ = 0.0f;
+
 
 /***********************************************************************************/
 void GUISystem::Init(GLFWwindow* windowPtr)
@@ -121,8 +130,50 @@ void GUISystem::Render(const int framebufferWidth,
 			nk_layout_row_push(m_nuklearContext, 200);
 			nk_value_float(m_nuklearContext, "Ambient Strength", ambientStrength);
 			nk_layout_row_push(m_nuklearContext, 110);
-			nk_slider_float(m_nuklearContext, 0.001f, &ambientStrength, 1.0f, 0.001f);
+			nk_slider_float(m_nuklearContext, 0.001f, &ambientStrength, 10.0f, 0.001f);
 			nk_layout_row_end(m_nuklearContext);
+		}
+		nk_layout_row_end(m_nuklearContext);
+
+		nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
+		{
+			nk_layout_row_push(m_nuklearContext, 200);
+			nk_value_float(m_nuklearContext, "Directional light rot x", directionalLightRotX);
+			nk_layout_row_push(m_nuklearContext, 110);
+			if (nk_slider_float(m_nuklearContext, -100.0f, &directionalLightRotX, 100.0f, 0.001f))
+			{
+				directionalLightRotXChanged = true;
+			}
+			nk_layout_row_end(m_nuklearContext);
+			
+		}
+		nk_layout_row_end(m_nuklearContext);
+
+		nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
+		{
+			nk_layout_row_push(m_nuklearContext, 200);
+			nk_value_float(m_nuklearContext, "Directional light rot y", directionalLightRotY);
+			nk_layout_row_push(m_nuklearContext, 110);
+			if (nk_slider_float(m_nuklearContext, -100.0f, &directionalLightRotY, 100.0f, 0.001f))
+			{
+				directionalLightRotYChanged = true;
+			}
+			nk_layout_row_end(m_nuklearContext);
+
+		}
+		nk_layout_row_end(m_nuklearContext);
+
+		nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
+		{
+			nk_layout_row_push(m_nuklearContext, 200);
+			nk_value_float(m_nuklearContext, "Directional light rot z", directionalLightRotZ);
+			nk_layout_row_push(m_nuklearContext, 110);
+			if (nk_slider_float(m_nuklearContext, -100.0f, &directionalLightRotZ, 100.0f, 0.001f))
+			{
+				directionalLightRotZChanged = true;
+			}
+			nk_layout_row_end(m_nuklearContext);
+
 		}
 		nk_layout_row_end(m_nuklearContext);
 
@@ -160,7 +211,7 @@ void GUISystem::Shutdown() const
 	nk_glfw3_shutdown();
 }
 
-void GUISystem::Update(RenderSystem* renderSystem)
+void GUISystem::Update(RenderSystem* renderSystem, SceneBase* scene)
 {	
 	if (renderSystem == nullptr)
 		return;
@@ -172,5 +223,75 @@ void GUISystem::Update(RenderSystem* renderSystem)
 	renderSystem->renderSettings.postProcessing.hdr.EnableExposure = EnableHDR;
 	renderSystem->renderSettings.postProcessing.hdr.Exposure= HDRExposure;
 	renderSystem->renderSettings.ambientStrength = ambientStrength;
+	renderSystem->DirectionalLightTarget = glm::vec3(directionalLightRotX, directionalLightRotY, directionalLightRotZ);
+	/*scene->m_staticDirectionalLights[0].Direction.x = directionalLightRotX;
+	scene->m_staticDirectionalLights[0].Direction.y = directionalLightRotY;
+	scene->m_staticDirectionalLights[0].Direction.z = directionalLightRotZ;*/
 
+	if (directionalLightRotXChanged)
+	{
+		//glm::vec3 rotationAxis(1.0f, 0.0f, 0.0f);
+		//float angleInRadians = glm::radians(10.0f);
+		//
+
+		//// Translate the vector to the origin
+		//glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), -scene->m_staticDirectionalLights[0].Direction);
+
+		//// Rotate the vector around the origin
+		//glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), angleInRadians, rotationAxis);
+
+		//// Translate the vector back to its original position
+		//glm::mat4 inverseTranslationMatrix = glm::translate(glm::mat4(1.0f), scene->m_staticDirectionalLights[0].Direction);
+
+		//// Combine all transformation matrices
+		//glm::mat4 finalTransformationMatrix = inverseTranslationMatrix * rotationMatrix * translationMatrix;
+
+		//glm::vec3 rotatedVector = glm::vec3(finalTransformationMatrix * glm::vec4(scene->m_staticDirectionalLights[0].Direction, 1.0f));
+
+		//
+		//scene->m_staticDirectionalLights[0].Direction = glm::vec3(rotatedVector.x, rotatedVector.y, rotatedVector.z);
+		//printf("%f\n", scene->m_staticDirectionalLights[0].Direction.x);
+		//printf("%f\n", scene->m_staticDirectionalLights[0].Direction.y);
+		//printf("%f\n\n", scene->m_staticDirectionalLights[0].Direction.z);
+		/*glm::vec3 rotationAxis(1.0f, 0.0f, 0.0f);
+		float angleInRadians = glm::radians(0.1f);
+		glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0), angleInRadians, rotationAxis);
+
+
+
+		glm::vec4 rotatedVector = rotationMatrix * glm::vec4(scene->m_staticDirectionalLights[0].Direction, 1.0f);
+
+		scene->m_staticDirectionalLights[0].Direction = glm::vec3(rotatedVector.x, rotatedVector.y, rotatedVector.z);*/
+		directionalLightRotXChanged = false;
+	}
+
+	if (directionalLightRotYChanged)
+	{
+		/*glm::vec3 rotationAxis(0.0f, 1.0f, 0.0f);
+		float angleInRadians = glm::radians(0.1f);
+		glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0), angleInRadians, rotationAxis);
+
+
+
+		glm::vec4 rotatedVector = rotationMatrix * glm::vec4(scene->m_staticDirectionalLights[0].Direction, 1.0f);
+
+		scene->m_staticDirectionalLights[0].Direction = glm::vec3(rotatedVector.x, rotatedVector.y, rotatedVector.z);*/
+		directionalLightRotYChanged = false;
+	}
+
+	if (directionalLightRotZChanged)
+	{
+		/*glm::vec3 rotationAxis(0.0f, 0.0f, 1.0f);
+		float angleInRadians = glm::radians(0.1f);
+		glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0), angleInRadians, rotationAxis);
+		glm::vec4 rotatedVector = rotationMatrix * glm::vec4(scene->m_staticDirectionalLights[0].Direction, 1.0f);
+
+		scene->m_staticDirectionalLights[0].Direction = glm::vec3(rotatedVector.x, rotatedVector.y, rotatedVector.z);*/
+		directionalLightRotZChanged = false;
+	}
+	
+
+	/*scene->m_staticDirectionalLights[0].Direction.x = directionalLightRotX;
+	scene->m_staticDirectionalLights[0].Direction.y = directionalLightRotY;
+	scene->m_staticDirectionalLights[0].Direction.z = directionalLightRotZ;*/
 }

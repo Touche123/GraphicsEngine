@@ -6,7 +6,7 @@ struct nk_context;
 struct GLFWwindow;
 struct FrameStats;
 struct RenderSystem;
-
+class SceneBase;
 /***********************************************************************************/
 class GUISystem {
 public:
@@ -22,7 +22,7 @@ public:
 		const int framebufferHeight,
 		const FrameStats& frameStats);
 	void Shutdown() const;
-	void Update(RenderSystem* renderSystem);
+	void Update(RenderSystem* renderSystem, SceneBase* scene);
 
 private:
 	nk_context* m_nuklearContext{ nullptr };

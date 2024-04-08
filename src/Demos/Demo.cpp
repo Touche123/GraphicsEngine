@@ -11,8 +11,8 @@ Demo::Demo()
 void Demo::Init(const std::string_view sceneName)
 {
 	SceneBase::Init(sceneName);
-	AddLight(StaticDirectionalLight({ 1.0f, 1.0f, 0.95f }, { 25.0f, 50.0f, 10.0f }));
-	AddLight(StaticPointLight({ 255, 255, 255 }, { 0, 4, 0 }, { 0,0,0 }));
+	AddLight(StaticDirectionalLight({ 1.0f, 1.0f, 0.95f }, { 20.0f, 70.0f, 20.0f }));
+	AddLight(StaticPointLight({ 255, 255, 255 }, { 0, 4, 0 }, { 0, 0, 0 }));
 
 	//auto sponza = ResourceManager::GetInstance().GetModel("Sponza", "Data/Models/crytek-sponza/sponza.obj");
 	auto sponza = ResourceManager::GetInstance().GetModel("Sponza", "Data/Models/gltf/sponza2/Sponza.gltf");

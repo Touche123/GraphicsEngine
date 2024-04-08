@@ -231,8 +231,6 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	forward_renderer.Bind();
 
-	glm::mat4 lightProjection = glm::ortho(-50.0f, 50.0f, 50.0f, -50.0f, 0.0f, 50.0f);
-	
 	forward_renderer.SetUniform("projection", projection);
 	forward_renderer.SetUniform("view", view);
 	forward_renderer.SetUniform("viewPos", camera.GetPosition());
@@ -460,12 +458,13 @@ void RenderSystem::renderDirectionalShadowMapping(const SceneBase& scene, Render
 
 	static auto& shadowDepthShader = m_shaderCache.at("directional_shadow_mapping");
 	shadowDepthShader.Bind();
-	static constexpr float near_plane = 0.0f, far_plane = 100.0f;
-	static const glm::mat4 lightProjection = glm::ortho(-50.0f, 50.0f, 50.0f, -50.0f, near_plane, far_plane);
+	static constexpr float near_plane = 0.0f, far_plane = 1000.0f;
+	static const glm::mat4 lightProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, near_plane, far_plane);
 
-	static const auto& lightView = glm::lookAt(scene.m_staticDirectionalLights[0].Direction,
-		glm::vec3(0.0f),
-		glm::vec3(0.0f, -1.0f, 0.0f));
+	
+	auto lightView = glm::lookAt(scene.m_staticDirectionalLights[0].Direction,
+		DirectionalLightTarget,
+		glm::vec3(0.0f, 1.0f, 0.0f));
 
 	m_lightSpaceMatrix = lightProjection * lightView;
 

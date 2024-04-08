@@ -58,6 +58,7 @@ public:
 	);
 
 	int GetVideoMemUsageKB() const;
+	glm::vec3 DirectionalLightTarget;
 
 	RenderSettings renderSettings;
 
@@ -111,7 +112,7 @@ private:
 	GLuint m_samplerPBRTextures{ 0 };
 
 	// Shadow mapping
-	GLuint m_shadowMapResolution{ 4096 }, m_shadowDepthTexture{ 0 }, m_shadowColorTexture{ 0 };
+	GLuint m_shadowMapResolution{ 2048 }, m_shadowDepthTexture{ 0 }, m_shadowColorTexture{ 0 };
 	GLFramebuffer m_shadowFBO;
 
 	// Depth frame Buffer

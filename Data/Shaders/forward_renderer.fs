@@ -21,7 +21,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 
-    vec4 shadowMapPos = vec4(fs_in.FragPos, 1.0);
+    //vec4 shadowMapPos = vec4(fs_in.FragPos, 1.0);
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
@@ -30,8 +30,9 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     float currentDepth = projCoords.z;
     // calculate bias (based on depth map resolution and slope)
     vec3 normal = normalize(fs_in.Normal);
+    //vec3 lightDir = lightPos;
     vec3 lightDir = normalize(lightPos - fs_in.FragPos);
-    float bias = max(0.01 * (1.0 - dot(normal, lightDir)), 0.001);
+    float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
 
     // PCF
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
@@ -39,7 +40,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     // Shadow Factor
     float shadowFactor = 0.0;
 
-    const int numSamples = 8; // Increase this value for more samples
+    const int numSamples = 32; // Increase this value for more samples
 
     for(int i = 0; i < numSamples; ++i)
     {
@@ -62,13 +63,10 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 }
 
 void main()
-{           
+{
     vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;
     vec3 normal = normalize(fs_in.Normal);
     
-    // ambient
-    //vec3 ambient = 0.3 * lightColor;
-    // diffuse
     vec3 lightDir = normalize(lightPos - fs_in.FragPos);
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * lightColor;
@@ -83,5 +81,5 @@ void main()
     float shadow = ShadowCalculation(fs_in.FragPosLightSpace);                      
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
     
-    FragColor = vec4(lighting, 1.0);
+    FragColor = vec4(pow(lighting, vec3(1.0/2.2)), 1.0);
 }
