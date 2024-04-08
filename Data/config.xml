@@ -5,7 +5,7 @@
 	
 	<Renderer width="1600" height="900" shadowResolution="2048">
 		<Lighting>
-			<Ambient r="1.0" g="1.0" b="1.0 " strength="1.0"></Ambient>
+			<Ambient r="1.0" g="1.0" b="1.0 " strength="0.3"></Ambient>
 		</Lighting>
 		
 		<Program name="GBuffer">
