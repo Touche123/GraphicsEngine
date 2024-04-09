@@ -11,8 +11,8 @@ Demo::Demo()
 void Demo::Init(const std::string_view sceneName)
 {
 	SceneBase::Init(sceneName);
-	AddLight(StaticDirectionalLight({ 1.0f, 1.0f, 0.95f }, { 20.0f, 70.0f, 20.0f }));
-	AddLight(StaticPointLight({ 255, 255, 255 }, { 0, 4, 0 }, { 0, 0, 0 }));
+	/*AddLight(StaticDirectionalLight({ 1.0f, 1.0f, 0.95f }, { 20.0f, 70.0f, 20.0f }));
+	AddLight(StaticPointLight({ 255, 255, 255 }, { 0, 4, 0 }, { 0, 0, 0 }));*/
 
 	pugi::xml_document doc;
 	const auto& result{ doc.load_string(ResourceManager::GetInstance().LoadTextFile("Example.xml").data()) };

@@ -280,6 +280,16 @@ std::vector<char> ResourceManager::LoadBinaryFile(const std::string_view path) c
 	return std::vector<char>(std::istreambuf_iterator<char>(in), (std::istreambuf_iterator<char>()));
 }
 
+ModelPtr ResourceManager::GetModelByName(const std::string name)
+{
+	auto it = m_modelCache.find(name);
+	if (it != m_modelCache.end())
+	{
+		return it->second;
+	}
+	return nullptr;
+}
+
 /***********************************************************************************/
 ModelPtr ResourceManager::GetModel(const std::string_view name, const std::string_view path)
 {

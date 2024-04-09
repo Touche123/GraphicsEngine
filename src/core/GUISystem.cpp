@@ -1,7 +1,7 @@
 #include "GUISystem.h"
 
 #include "../FrameStats.h"
-
+#include "../ResourceManager.h"
 
 #include <fmt/core.h>
 #include <cstddef>
@@ -44,6 +44,8 @@ float directionalLightRotX = 0.0f;
 float directionalLightRotY = 0.0f;
 float directionalLightRotZ = 0.0f;
 
+float modelPosX = 0.0f;
+bool saveScene = false;
 
 /***********************************************************************************/
 void GUISystem::Init(GLFWwindow* windowPtr)
@@ -63,6 +65,7 @@ void GUISystem::Init(GLFWwindow* windowPtr)
 void GUISystem::Render(const int framebufferWidth,
 	const int framebufferHeight, const FrameStats& frameStats)
 {
+	auto modelPtr = ResourceManager::GetInstance().GetModelByName("Sponza");
 	
 	struct nk_colorf bg;
 	bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
@@ -92,7 +95,7 @@ void GUISystem::Render(const int framebufferWidth,
 
 	nk_end(m_nuklearContext);
 
-	if (nk_begin(m_nuklearContext, "SSAO", nk_recti(20, 20, 150, 400), NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_TITLE))
+	if (nk_begin(m_nuklearContext, "SSAO", nk_recti(20, 20, 250, 400), NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_TITLE))
 	{
 		nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
 		{
@@ -131,6 +134,31 @@ void GUISystem::Render(const int framebufferWidth,
 			nk_value_float(m_nuklearContext, "Ambient Strength", ambientStrength);
 			nk_layout_row_push(m_nuklearContext, 110);
 			nk_slider_float(m_nuklearContext, 0.001f, &ambientStrength, 10.0f, 0.001f);
+			nk_layout_row_end(m_nuklearContext);
+		}
+		nk_layout_row_end(m_nuklearContext);
+
+		nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
+		{
+			nk_layout_row_push(m_nuklearContext, 200);
+			nk_value_float(m_nuklearContext, "Model pos  x", modelPtr->GetPosition().x);
+			nk_layout_row_push(m_nuklearContext, 110);
+			if (nk_slider_float(m_nuklearContext, -500.0f, &modelPosX, 500.0f, 0.001f))
+			{
+				modelPtr->Translate({ modelPosX, 0, 0 });
+			}
+			nk_layout_row_end(m_nuklearContext);
+
+		}
+		nk_layout_row_end(m_nuklearContext);
+
+		nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
+		{
+			nk_layout_row_push(m_nuklearContext, 200);
+			if (nk_button_label(m_nuklearContext, "Save Scene"))
+			{
+				saveScene = true;
+			}
 			nk_layout_row_end(m_nuklearContext);
 		}
 		nk_layout_row_end(m_nuklearContext);
@@ -224,10 +252,16 @@ void GUISystem::Update(RenderSystem* renderSystem, SceneBase* scene)
 	renderSystem->renderSettings.postProcessing.hdr.Exposure= HDRExposure;
 	renderSystem->renderSettings.ambientStrength = ambientStrength;
 	renderSystem->DirectionalLightTarget = glm::vec3(directionalLightRotX, directionalLightRotY, directionalLightRotZ);
+
 	/*scene->m_staticDirectionalLights[0].Direction.x = directionalLightRotX;
 	scene->m_staticDirectionalLights[0].Direction.y = directionalLightRotY;
 	scene->m_staticDirectionalLights[0].Direction.z = directionalLightRotZ;*/
-
+	if (saveScene)
+	{
+		scene->Save();
+		saveScene = false;
+	}
+		
 	if (directionalLightRotXChanged)
 	{
 		//glm::vec3 rotationAxis(1.0f, 0.0f, 0.0f);

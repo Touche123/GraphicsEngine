@@ -32,6 +32,7 @@ public:
 	std::vector<char> LoadBinaryFile(const std::string_view path) const;
 
 	ModelPtr GetModel(const std::string_view name, const std::string_view path);
+	ModelPtr GetModelByName(const std::string name);
 	// Add a loaded model the the model cache
 	ModelPtr CacheModel(const std::string_view name, const Model model, const bool overwriteIfExists = false);
 
