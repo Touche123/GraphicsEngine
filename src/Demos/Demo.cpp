@@ -14,21 +14,10 @@ void Demo::Init(const std::string_view sceneName)
 	AddLight(StaticDirectionalLight({ 1.0f, 1.0f, 0.95f }, { 20.0f, 70.0f, 20.0f }));
 	AddLight(StaticPointLight({ 255, 255, 255 }, { 0, 4, 0 }, { 0, 0, 0 }));
 
-	//auto sponza = ResourceManager::GetInstance().GetModel("Sponza", "Data/Models/crytek-sponza/sponza.obj");
-	auto sponza = ResourceManager::GetInstance().GetModel("Sponza", "Data/Models/gltf/sponza2/Sponza.gltf");
-	sponza->Translate(glm::vec3(0.0f));
-	sponza->Scale(glm::vec3(0.01f));
-	AddModel(sponza);
-	
-	auto defaultCube = ResourceManager::GetInstance().GetModel("DefaultCube", "Data/Models/Primitives/DefaultCube.obj");
-	defaultCube->Scale(glm::vec3(1.0f));
-	defaultCube->Translate(glm::vec3(2.0f, 1.0f, 0.0f));
-	AddModel(defaultCube);
+	pugi::xml_document doc;
+	const auto& result{ doc.load_string(ResourceManager::GetInstance().LoadTextFile("Example.xml").data()) };
 
-	auto defaultPlane = ResourceManager::GetInstance().GetModel("DefaultPlane", "Data/Models/Primitives/DefaultPlane.obj");
-	defaultPlane->Scale(glm::vec3(10.0f));
-	defaultPlane->Translate(glm::vec3(0.0f, 0.0f, 0.0f));
-	AddModel(defaultPlane);
+	Load(doc);
 
 	// Sun
 	//srand(13);
@@ -48,11 +37,11 @@ void Demo::Init(const std::string_view sceneName)
 
 	//	AddLight(StaticPointLight({ rColor, gColor, bColor}, { xPos, yPos, zPos }));
 	//}
+	
+	Save();
 }
 
 void Demo::Update(const double dt)
 {
 	SceneBase::Update(dt);
-
-
 }

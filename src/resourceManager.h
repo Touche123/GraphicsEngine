@@ -35,6 +35,7 @@ public:
 	// Add a loaded model the the model cache
 	ModelPtr CacheModel(const std::string_view name, const Model model, const bool overwriteIfExists = false);
 
+	
 	// Checks if a named material is cached. If so, we get an initialized optional. Otherwise we get an empty one.
 	// It's up to the caller to check the result.
 	std::optional<PBRMaterialPtr> GetMaterial(const std::string_view name) const;
@@ -50,12 +51,12 @@ public:
 
 	// Removes a named model from cache.
 	void UnloadModel(const std::string_view modelName);
-
+	auto GetModelCache() const noexcept { return &m_modelCache; }
 	auto GetNumLoadedTextures() const noexcept { return m_textureCache.size(); }
 	auto GetNumLoadedModels() const noexcept { return m_modelCache.size(); }
 	auto GetNumMaterials() const noexcept { return m_materialCache.size(); }
-
 private:
+	
 	std::unordered_map<std::string, ModelPtr> m_modelCache;
 	std::unordered_map<std::string, unsigned int> m_textureCache;
 	std::unordered_map<std::string, PBRMaterialPtr> m_materialCache;

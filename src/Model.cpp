@@ -11,7 +11,7 @@
 #include "ResourceManager.h"
 
 /***********************************************************************************/
-Model::Model(const std::string_view Path, const std::string_view Name, const bool flipWindingOrder, const bool loadMaterial) : m_name(Name), m_path(Path)
+Model::Model(const std::string_view Path, const std::string_view Name, const bool flipWindingOrder, const bool loadMaterial) : m_name(Name), m_fullPath(Path)
 {
 
 	if (!loadModel(Path, true, loadMaterial))
@@ -129,8 +129,9 @@ bool Model::loadModel(const std::string_view Path, const bool flipWindingOrder, 
 		return false;
 	}
 
-	m_path = Path.substr(0, Path.find_last_of('/')); // Strip the model file name and keep the model folder.
-	m_path += "/";
+	m_fullPath = Path;
+	m_folderPath = Path.substr(0, Path.find_last_of('/')); // Strip the model file name and keep the model folder.
+	m_folderPath += "/";
 
 	processNode(scene->mRootNode, scene, loadMaterial);
 
@@ -271,12 +272,12 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, const bool loadMater
 			mat->GetTexture(aiTextureType_OPACITY, 0, &alphaMaskPath);
 
 			const auto newMaterial = ResourceManager::GetInstance().CacheMaterial(name.C_Str(),
-				m_path + albedoPath.C_Str(),
+				m_folderPath + albedoPath.C_Str(),
 				"",
-				m_path + metallicPath.C_Str(),
-				m_path + normalPath.C_Str(),
-				m_path + roughnessPath.C_Str(),
-				m_path + alphaMaskPath.C_Str());
+				m_folderPath + metallicPath.C_Str(),
+				m_folderPath + normalPath.C_Str(),
+				m_folderPath + roughnessPath.C_Str(),
+				m_folderPath + alphaMaskPath.C_Str());
 
 			++m_numMats;
 			return Mesh(vertices, indices, newMaterial);

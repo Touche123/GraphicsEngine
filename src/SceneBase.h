@@ -9,6 +9,7 @@
 
 #include <string>
 #include <fstream>
+#include <pugixml.hpp>
 
 /***********************************************************************************/
 // Forward Declarations
@@ -38,7 +39,8 @@ protected:
 	void AddLight(const StaticSpotLight& light);
 
 	void AddModel(const ModelPtr& model);
-	void Load();
+	void Load(const pugi::xml_node& sceneNode);
+	void Save();
 
 private:
 	std::string m_sceneName;

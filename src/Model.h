@@ -34,6 +34,11 @@ public:
 
 	auto GetMeshes() const noexcept { return m_meshes; }
 	auto GetBoundingBox() const noexcept { return m_aabb; }
+	auto GetModelName() const noexcept { return m_name; }
+	auto GetModelFolderPath() const noexcept { return m_folderPath; }
+	auto GetModelFullPath() const noexcept { return m_fullPath; }
+	auto GetPosition() const noexcept { return m_position; }
+	auto GetScale() const noexcept { return m_scale; }
 
 protected:
 	std::vector<Mesh> m_meshes;
@@ -52,7 +57,8 @@ private:
 	// Model name
 	const std::string m_name;
 	// Location on disk holding model and textures
-	std::string m_path;
+	std::string m_folderPath;
+	std::string m_fullPath;
 
 	std::size_t m_numMats;
 };
