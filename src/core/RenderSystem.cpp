@@ -81,6 +81,7 @@ void RenderSystem::Init(const pugi::xml_node& renderNode)
 	setupGBuffer();
 	setupSSAOBuffer();
 	setupDirectionalShadowMapping();
+	initBoundingBoxDrawing();
 	//setupTextureSamplers();
 
 	glEnable(GL_DEBUG_OUTPUT);
@@ -216,6 +217,7 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	static auto& deferredShader = m_shaderCache.at("Deferred");
 	static auto& deferredLightBoxShader = m_shaderCache.at("DeferredLightBox");
 	static auto& forward_renderer = m_shaderCache.at("forward_renderer");
+	static auto& shaderBoundingBox = m_shaderCache.at("bounding_box");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -240,6 +242,13 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	forward_renderer.SetUniform("ambient", ambient * renderSettings.ambientStrength);
 
 	renderModelsWithTextures(forward_renderer, renderListBegin, renderListEnd);
+
+	shaderBoundingBox.Bind();
+	shaderBoundingBox.SetUniform("projection", projection);
+	shaderBoundingBox.SetUniform("view", view);
+	shaderBoundingBox.SetUniform("projection", projection);
+
+	renderModelBoundingBox(shaderBoundingBox, renderListBegin, renderListEnd);
 
 	//glActiveTexture(GL_TEXTURE0);
 	//glBindTexture(GL_TEXTURE_2D, gPosition);
@@ -361,6 +370,26 @@ void RenderSystem::setDefaultState()
 	glDepthFunc(GL_LEQUAL);*/
 	//glEnable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void RenderSystem::renderModelBoundingBox(GLShaderProgram& shader, RenderListIterator renderListBegin, RenderListIterator renderListEnd) const
+{
+	auto begin{ renderListBegin };
+
+	while (begin != renderListEnd)
+	{
+		shader.SetUniform("model", (*begin)->GetModelMatrix());
+		shader.SetUniform("minExtents", (*begin)->GetBoundingBox().getMin());
+		shader.SetUniform("maxExtents", (*begin)->GetBoundingBox().getMax());
+		const auto& meshes{ (*begin)->GetMeshes() };
+		for (const auto& mesh : meshes)
+		{
+			glBindVertexArray(boundingBoxVAO);
+			glDrawArrays(GL_LINE_LOOP, 0, boundingBoxVertices.size());
+			glBindVertexArray(0);
+		}
+		++begin;
+	}
 }
 
 /***********************************************************************************/
@@ -691,5 +720,23 @@ void RenderSystem::renderDepthPass(GLShaderProgram& shader, RenderListIterator r
 
 		++begin;
 	}
+}
+
+void RenderSystem::initBoundingBoxDrawing()
+{
+	// Generate VBO
+	glGenBuffers(1, &boundingBoxVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, boundingBoxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * boundingBoxVertices.size(), &boundingBoxVertices[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// Generate VAO
+	glGenVertexArrays(1, &boundingBoxVAO);
+	glBindVertexArray(boundingBoxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, boundingBoxVBO);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 

@@ -66,11 +66,14 @@ private:
 	glm::vec3 ambient;
 	float ambientStrength;
 
+	void initBoundingBoxDrawing();
 	void compileShaders();
 	//
 	void queryHardwareCaps();
 	// Sets the default state required for rendering
 	void setDefaultState();
+	// Render models boundingbox contained in the renderlist.
+	void renderModelBoundingBox(GLShaderProgram& shader, RenderListIterator renderListBegin, RenderListIterator renderListEnd) const;
 	// Render models contained in the renderlist
 	void renderModelsWithTextures(GLShaderProgram& shader, RenderListIterator renderListBegin, RenderListIterator renderListEnd) const;
 	// Render models without binding textures (for a depth or shadow pass perhaps)
@@ -153,6 +156,50 @@ private:
 	unsigned int noiseTexture;
 	unsigned int depthCubeMap;
 	unsigned int ssaoColorBuffer, ssaoColorBufferBlur;
+
+	// Bounding box
+	GLuint boundingBoxVBO;
+	GLuint boundingBoxVAO;
+	std::vector<glm::vec3> boundingBoxVertices = {
+		// Define the vertices of the bounding box
+		 // Front face (clockwise)
+	 // Front face (clockwise)
+	glm::vec3(-0.5f, -0.5f, -0.5f),
+	glm::vec3(0.5f, -0.5f, -0.5f),
+	glm::vec3(0.5f, 0.5f, -0.5f),
+	glm::vec3(-0.5f, 0.5f, -0.5f),
+
+	// Back face (clockwise)
+	glm::vec3(-0.5f, -0.5f, 0.5f),
+	glm::vec3(0.5f, -0.5f, 0.5f),
+	glm::vec3(0.5f, 0.5f, 0.5f),
+	glm::vec3(-0.5f, 0.5f, 0.5f),
+
+	// Top face (clockwise)
+	glm::vec3(-0.5f, 0.5f, -0.5f),
+	glm::vec3(0.5f, 0.5f, -0.5f),
+	glm::vec3(0.5f, 0.5f, 0.5f),
+	glm::vec3(-0.5f, 0.5f, 0.5f),
+
+	// Bottom face (clockwise)
+	glm::vec3(-0.5f, -0.5f, -0.5f),
+	glm::vec3(0.5f, -0.5f, -0.5f),
+	glm::vec3(0.5f, -0.5f, 0.5f),
+	glm::vec3(-0.5f, -0.5f, 0.5f),
+
+	// Right face (clockwise)
+	glm::vec3(0.5f, -0.5f, -0.5f),
+	glm::vec3(0.5f, -0.5f, 0.5f),
+	glm::vec3(0.5f, 0.5f, 0.5f),
+	glm::vec3(0.5f, 0.5f, -0.5f),
+
+	// Left face (clockwise)
+	glm::vec3(-0.5f, -0.5f, -0.5f),
+	glm::vec3(-0.5f, -0.5f, 0.5f),
+	glm::vec3(-0.5f, 0.5f, 0.5f),
+	glm::vec3(-0.5f, 0.5f, -0.5f)
+	};
+
 	// lighting info
 	// -------------
 	std::vector<glm::vec3> lightPositions;

@@ -213,10 +213,13 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="Data\config.xml" />
+    <Xml Include="Example.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shaders\basic.fs" />
     <None Include="Data\Shaders\basic.vs" />
+    <None Include="Data\Shaders\bounding_box.fs" />
+    <None Include="Data\Shaders\bounding_box.vs" />
     <None Include="Data\Shaders\deferred_light_box.fs" />
     <None Include="Data\Shaders\deferred_light_box.vs" />
     <None Include="Data\Shaders\deferred_shading.fs" />

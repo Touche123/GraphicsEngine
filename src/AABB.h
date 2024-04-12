@@ -57,6 +57,8 @@ public:
 	/// Translates AABB by vector \p v.
 	void translate(const glm::vec3& v);
 
+	void setPosition(glm::vec3 position);
+
 	/// Scale the AABB by \p scale, centered around \p origin.
 	/// \param[in]  scale  3D vector specifying scale along each axis.
 	/// \param[in]  origin Origin of scaling operation. Most useful origin would
@@ -90,6 +92,15 @@ public:
 		return mMax;
 	}
 
+	void setMin(glm::vec3 v)
+	{
+		mMin = v;
+	}
+
+	void setMax(glm::vec3 v)
+	{
+		mMax = v;
+	}
 	/// Returns true if AABBs share a face overlap.
 	/// \xxx Untested -- This function is not represented in our unit tests.
 	bool overlaps(const AABB& bb) const;

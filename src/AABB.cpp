@@ -71,6 +71,11 @@ void AABB::extend(const AABB& aabb)
 	}
 }
 
+void AABB::setPosition(glm::vec3 position)
+{
+
+}
+
 void AABB::extendDisk(const glm::vec3& c, const glm::vec3& n, float r)
 {
 	if (glm::length(n) < 1.e-12)

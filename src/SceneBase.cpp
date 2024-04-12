@@ -133,8 +133,9 @@ void SceneBase::Load(const pugi::xml_node& sceneNode)
 			auto modelScaleZ = model.attribute("Scale_Z").as_float();
 
 			auto loadedModel = ResourceManager::GetInstance().GetModel(modelName, modelPath);
-			loadedModel->Translate(glm::vec3(modelWorldX, modelWorldY, modelWorldZ));
 			loadedModel->Scale(glm::vec3(modelScaleX, modelScaleY, modelScaleZ));
+			loadedModel->Translate(glm::vec3(modelWorldX, modelWorldY, modelWorldZ));
+			
 
 			AddModel(loadedModel);
 			printf("Loaded model - Name: %s, Path: %s \n", model.attribute("Name").as_string(), model.attribute("Path").as_string());

@@ -39,6 +39,7 @@ public:
 	auto GetModelFullPath() const noexcept { return m_fullPath; }
 	auto GetPosition() const noexcept { return m_position; }
 	auto GetScale() const noexcept { return m_scale; }
+	void SetPosition(glm::vec3 position);
 
 protected:
 	std::vector<Mesh> m_meshes;
@@ -50,6 +51,8 @@ private:
 
 	// Transformation data
 	glm::vec3 m_scale, m_position, m_axis;
+	glm::vec3 m_size;
+
 	float m_radians;
 
 	AABB m_aabb; // Model bounding box

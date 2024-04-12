@@ -217,6 +217,9 @@
     <Xml Include="Data\config.xml">
       <Filter>Resource Files</Filter>
     </Xml>
+    <Xml Include="Example.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Shaders\basic.fs">
@@ -277,6 +280,12 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Data\Shaders\directional_shadow_mapping.vs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\bounding_box.fs">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\bounding_box.vs">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>
