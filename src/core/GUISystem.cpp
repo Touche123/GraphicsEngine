@@ -48,6 +48,10 @@ float directionalLightRotZ = 0.0f;
 float modelPosX = 0.0f;
 bool saveScene = false;
 
+float selectedModelX = 0.0f;
+float selectedModelY = 0.0f;
+float selectedModelZ = 0.0f;
+
 /***********************************************************************************/
 void GUISystem::Init(GLFWwindow* windowPtr)
 {
@@ -73,7 +77,7 @@ void GUISystem::UpdateInput()
 
 /***********************************************************************************/
 void GUISystem::Render(const int framebufferWidth,
-	const int framebufferHeight, const FrameStats& frameStats)
+	const int framebufferHeight, const FrameStats& frameStats, SceneBase* scene)
 {
 	auto modelPtr = ResourceManager::GetInstance().GetModelByName("Sponza");
 	
@@ -81,7 +85,7 @@ void GUISystem::Render(const int framebufferWidth,
 	bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
 
 	nk_glfw3_new_frame();
-
+	
 	const auto frameStatFlags = NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_NO_INPUT;
 
 	if (nk_begin(m_nuklearContext, "Frame Stats", nk_recti(0, framebufferHeight - 80, 720, 80), frameStatFlags))
@@ -148,22 +152,27 @@ void GUISystem::Render(const int framebufferWidth,
 		}
 		nk_layout_row_end(m_nuklearContext);
 
-		if (modelPtr != NULL)
+		for (auto& model : scene->m_sceneModels)
 		{
-			nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
+			if (model->GetSelected())
 			{
-				nk_layout_row_push(m_nuklearContext, 200);
-				nk_value_float(m_nuklearContext, "Model pos  x", modelPtr->GetPosition().x);
-				nk_layout_row_push(m_nuklearContext, 110);
-				if (nk_slider_float(m_nuklearContext, -10000.0f, &modelPosX, 10000.0f, 0.001f))
+				nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
 				{
-					modelPtr->Translate({ modelPosX, 0, 0 });
+					nk_layout_row_push(m_nuklearContext, 200);
+					nk_value_float(m_nuklearContext, "Model pos  x", model->GetPosition().x);
+					nk_layout_row_push(m_nuklearContext, 110);
+					if (nk_slider_float(m_nuklearContext, -10000.0f, &modelPosX, 10000.0f, 0.001f))
+					{
+						model->Translate({ modelPosX, 0, 0 });
+					}
+					nk_layout_row_end(m_nuklearContext);
+
 				}
 				nk_layout_row_end(m_nuklearContext);
-
 			}
-			nk_layout_row_end(m_nuklearContext);
 		}
+
+		
 		nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
 		{
 			nk_layout_row_push(m_nuklearContext, 200);

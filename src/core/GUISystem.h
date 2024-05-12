@@ -20,7 +20,7 @@ public:
 	void Init(GLFWwindow* windowPtr);
 	void Render(const int framebufferWidth,
 		const int framebufferHeight,
-		const FrameStats& frameStats);
+		const FrameStats& frameStats, SceneBase* scene);
 	void Shutdown() const;
 	void Update(RenderSystem* renderSystem, SceneBase* scene);
 	void UpdateInput();
