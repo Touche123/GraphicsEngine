@@ -75,8 +75,8 @@
     <LibraryPath>C:\dev\c++\GraphicsEngine\ext\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)ext\stb\;$(SolutionDir)ext\Assimp\include\;$(SolutionDir)ext\nuklear\include\;$(SolutionDir)ext\fmt\include\;$(SolutionDir)ext\glad\include\;$(SolutionDir)ext\pugixml;C:\dev\c++\GraphicsEngine\ext\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)ext\Assimp\;C:\dev\c++\GraphicsEngine\ext\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(SolutionDir)ext\stb\;$(SolutionDir)ext\Assimp\include\;$(SolutionDir)ext\nuklear\include\;$(SolutionDir)ext\fmt\include\;$(SolutionDir)ext\glad\include\;$(SolutionDir)ext\pugixml;$(SolutionDir)ext\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)ext\Assimp\;$(SolutionDir)ext\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\dev\c++\GraphicsEngine\ext\include;$(IncludePath)</IncludePath>

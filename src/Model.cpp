@@ -39,13 +39,6 @@ void Model::AttachMesh(const Mesh mesh) noexcept
 }
 
 /***********************************************************************************/
-void Model::Scale(const glm::vec3& scale)
-{
-	m_scale = scale;
-	m_aabb.scale(scale, glm::vec3(0.0));
-}
-
-/***********************************************************************************/
 void Model::Rotate(const float radians, const glm::vec3& axis)
 {
 	m_radians = radians;
@@ -56,20 +49,23 @@ void Model::Rotate(const float radians, const glm::vec3& axis)
 void Model::Translate(const glm::vec3& pos)
 {
 	m_position = pos;
-	m_aabb.setMin(pos - m_size / 2.0f);
-	m_aabb.setMax(pos + m_size / 2.0f);
-	//m_aabb.translate(pos);
-	
+	//m_aabb.setMin(pos - m_size / 2.0f);
+	//m_aabb.setMax(pos + m_size / 2.0f);
+	m_aabb.translate(pos);
+}
 
-	printf("PosX: %f\n", m_position.x);
-	printf("Min: %f, Max: %f\n", m_aabb.getMin().x, m_aabb.getMax().x);
+/***********************************************************************************/
+void Model::Scale(const glm::vec3& scale)
+{
+	m_scale = scale;
+	m_aabb.scale(scale, glm::vec3(0));
 }
 
 /***********************************************************************************/
 void Model::SetPosition(glm::vec3 position)
 {
 	m_position = position;
-	//m_aabb.
+	
 }
 
 /***********************************************************************************/

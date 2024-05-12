@@ -161,43 +161,42 @@ private:
 	GLuint boundingBoxVBO;
 	GLuint boundingBoxVAO;
 	std::vector<glm::vec3> boundingBoxVertices = {
-		// Define the vertices of the bounding box
-		 // Front face (clockwise)
+	// Define the vertices of the bounding box
 	 // Front face (clockwise)
-	glm::vec3(-0.5f, -0.5f, -0.5f),
-	glm::vec3(0.5f, -0.5f, -0.5f),
-	glm::vec3(0.5f, 0.5f, -0.5f),
-	glm::vec3(-0.5f, 0.5f, -0.5f),
+	glm::vec3(-1.0f, -1.0f, -1.0f),
+	glm::vec3(1.0f, -1.0f, -1.0f),
+	glm::vec3(1.0f, 1.0f, -1.0f),
+	glm::vec3(-1.0f, 1.0f, -1.0f),
 
 	// Back face (clockwise)
-	glm::vec3(-0.5f, -0.5f, 0.5f),
-	glm::vec3(0.5f, -0.5f, 0.5f),
-	glm::vec3(0.5f, 0.5f, 0.5f),
-	glm::vec3(-0.5f, 0.5f, 0.5f),
+	glm::vec3(-1.0f, -1.0f, 1.0f),
+	glm::vec3(1.0f, -1.0f, 1.0f),
+	glm::vec3(1.0f, 1.0f, 1.0f),
+	glm::vec3(-1.0f, 1.0f, 1.0f),
 
 	// Top face (clockwise)
-	glm::vec3(-0.5f, 0.5f, -0.5f),
-	glm::vec3(0.5f, 0.5f, -0.5f),
-	glm::vec3(0.5f, 0.5f, 0.5f),
-	glm::vec3(-0.5f, 0.5f, 0.5f),
+	glm::vec3(-1.0f, 1.0f, -1.0f),
+	glm::vec3(1.0f, 1.0f, -1.0f),
+	glm::vec3(1.0f, 1.0f, 1.0f),
+	glm::vec3(-1.0f, 1.0f, 1.0f),
 
 	// Bottom face (clockwise)
-	glm::vec3(-0.5f, -0.5f, -0.5f),
-	glm::vec3(0.5f, -0.5f, -0.5f),
-	glm::vec3(0.5f, -0.5f, 0.5f),
-	glm::vec3(-0.5f, -0.5f, 0.5f),
+	glm::vec3(-1.0f, -1.0f, -1.0f),
+	glm::vec3(1.0f, -1.0f, -1.0f),
+	glm::vec3(1.0f, -1.0f, 1.0f),
+	glm::vec3(-1.0f, -1.0f, 1.0f),
 
 	// Right face (clockwise)
-	glm::vec3(0.5f, -0.5f, -0.5f),
-	glm::vec3(0.5f, -0.5f, 0.5f),
-	glm::vec3(0.5f, 0.5f, 0.5f),
-	glm::vec3(0.5f, 0.5f, -0.5f),
+	glm::vec3(1.0f, -1.0f, -1.0f),
+	glm::vec3(1.0f, -1.0f, 1.0f),
+	glm::vec3(1.0f, 1.0f, 1.0f),
+	glm::vec3(1.0f, 1.0f, -1.0f),
 
 	// Left face (clockwise)
-	glm::vec3(-0.5f, -0.5f, -0.5f),
-	glm::vec3(-0.5f, -0.5f, 0.5f),
-	glm::vec3(-0.5f, 0.5f, 0.5f),
-	glm::vec3(-0.5f, 0.5f, -0.5f)
+	glm::vec3(-1.0f, -1.0f, -1.0f),
+	glm::vec3(-1.0f, -1.0f, 1.0f),
+	glm::vec3(-1.0f, 1.0f, 1.0f),
+	glm::vec3(-1.0f, 1.0f, -1.0f)
 	};
 
 	// lighting info

@@ -138,20 +138,22 @@ void GUISystem::Render(const int framebufferWidth,
 		}
 		nk_layout_row_end(m_nuklearContext);
 
-		nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
+		if (modelPtr != NULL)
 		{
-			nk_layout_row_push(m_nuklearContext, 200);
-			nk_value_float(m_nuklearContext, "Model pos  x", modelPtr->GetPosition().x);
-			nk_layout_row_push(m_nuklearContext, 110);
-			if (nk_slider_float(m_nuklearContext, -10000.0f, &modelPosX, 10000.0f, 0.001f))
+			nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
 			{
-				modelPtr->Translate({ modelPosX, 0, 0 });
+				nk_layout_row_push(m_nuklearContext, 200);
+				nk_value_float(m_nuklearContext, "Model pos  x", modelPtr->GetPosition().x);
+				nk_layout_row_push(m_nuklearContext, 110);
+				if (nk_slider_float(m_nuklearContext, -10000.0f, &modelPosX, 10000.0f, 0.001f))
+				{
+					modelPtr->Translate({ modelPosX, 0, 0 });
+				}
+				nk_layout_row_end(m_nuklearContext);
+
 			}
 			nk_layout_row_end(m_nuklearContext);
-
 		}
-		nk_layout_row_end(m_nuklearContext);
-
 		nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
 		{
 			nk_layout_row_push(m_nuklearContext, 200);

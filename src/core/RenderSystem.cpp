@@ -236,9 +236,23 @@ void RenderSystem::Render(const Camera& camera, RenderListIterator renderListBeg
 	forward_renderer.SetUniform("projection", projection);
 	forward_renderer.SetUniform("view", view);
 	forward_renderer.SetUniform("viewPos", camera.GetPosition());
-	forward_renderer.SetUniform("lightPos", scene.m_staticDirectionalLights[0].Direction);
+	forward_renderer.SetUniform("directionalLightDirection", scene.m_staticDirectionalLights[0].Direction);
+	forward_renderer.SetUniform("directionalLightColor", scene.m_staticDirectionalLights[0].Color);
+
+
+	/*for (size_t i = 0; i < scene.m_staticPointLights.size(); ++i)
+	{
+		forward_renderer.SetUniform("pointLights[" + std::to_string(i) + "].position", scene.m_staticPointLights[0].Position);
+		forward_renderer.SetVec3("pointLights[" + std::to_string(i) + "].ambient", {0.05f, 0.05f, 0.05f});
+		forward_renderer.SetVec3("pointLights[" + std::to_string(i) + "].diffuse", {0.8f, 0.8f, 0.8f});
+		forward_renderer.SetVec3("pointLights[" + std::to_string(i) + "].specular", {1.0f, 1.0f, 1.0f});
+		forward_renderer.SetUniformf("pointLights[" + std::to_string(i) + "].constant", 1.0);
+		forward_renderer.SetUniformf("pointLights[" + std::to_string(i) + "].linear", 0.09f);
+		forward_renderer.SetUniformf("pointLights[" + std::to_string(i) + "].quadratic", 0.032f);
+	}*/
+
 	forward_renderer.SetUniform("lightSpaceMatrix", m_lightSpaceMatrix);
-	forward_renderer.SetUniform("lightColor", scene.m_staticDirectionalLights[0].Color);
+	
 	forward_renderer.SetUniform("ambient", ambient * renderSettings.ambientStrength);
 
 	renderModelsWithTextures(forward_renderer, renderListBegin, renderListEnd);
@@ -378,7 +392,19 @@ void RenderSystem::renderModelBoundingBox(GLShaderProgram& shader, RenderListIte
 
 	while (begin != renderListEnd)
 	{
-		shader.SetUniform("model", (*begin)->GetModelMatrix());
+		glm::vec3 min = (*begin)->GetBoundingBox().getMin();
+		glm::vec3 max = (*begin)->GetBoundingBox().getMax();
+		glm::mat4 model = glm::mat4(1.0f);
+		
+		model = glm::translate(model, (*begin)->GetBoundingBox().getCenter());
+		model = glm::scale(model, glm::vec3((max.x - min.x) / 2, (max.y - min.y) / 2, (max.z - min.z) / 2));
+
+		std::printf("Center: %f, %f, %f \n", (*begin)->GetBoundingBox().getCenter().x, (*begin)->GetBoundingBox().getCenter().y, (*begin)->GetBoundingBox().getCenter().z);
+		std::printf("Min: %f, %f, %f \n", min.x, min.y, min.z);
+		std::printf("Max: %f, %f, %f \n", max.x, max.y, max.z);
+
+		shader.SetUniform("model", model);
+		//shader.SetUniform("model", (*begin)->GetModelMatrix());
 		shader.SetUniform("minExtents", (*begin)->GetBoundingBox().getMin());
 		shader.SetUniform("maxExtents", (*begin)->GetBoundingBox().getMax());
 		const auto& meshes{ (*begin)->GetMeshes() };
@@ -488,12 +514,20 @@ void RenderSystem::renderDirectionalShadowMapping(const SceneBase& scene, Render
 	static auto& shadowDepthShader = m_shaderCache.at("directional_shadow_mapping");
 	shadowDepthShader.Bind();
 	static constexpr float near_plane = 0.0f, far_plane = 1000.0f;
+	//static const glm::mat4 lightProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, near_plane, far_plane);
 	static const glm::mat4 lightProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, near_plane, far_plane);
 
-	
-	auto lightView = glm::lookAt(scene.m_staticDirectionalLights[0].Direction,
+	auto lightView = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f),
 		DirectionalLightTarget,
 		glm::vec3(0.0f, 1.0f, 0.0f));
+	
+	/*auto lightView = glm::lookAt(scene.m_staticDirectionalLights[0].Direction,
+		DirectionalLightTarget,
+		glm::vec3(0.0f, 1.0f, 0.0f));*/
+
+	/*auto lightView = glm::lookAt(glm::vec3(-20.0f, 40.0f, -10.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f));*/
 
 	m_lightSpaceMatrix = lightProjection * lightView;
 
