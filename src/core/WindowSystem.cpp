@@ -63,8 +63,9 @@ GLFWwindow* WindowSystem::Init(const pugi::xml_node& windowNode)
 	
 	glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
 	glfwSetWindowSizeCallback(m_window, genericInputCallback(Input::GetInstance().windowResized));
-	glfwSetKeyCallback(m_window, genericInputCallback(Input::GetInstance().keyPressed));
+	/*glfwSetKeyCallback(m_window, genericInputCallback(Input::GetInstance().keyPressed));
 	glfwSetCursorPosCallback(m_window, genericInputCallback(Input::GetInstance().mouseMoved));
+	glfwSetMouseButtonCallback(m_window, m_b_cs);*/
 
 	glfwSwapInterval(windowNode.attribute("vsync").as_bool());
 

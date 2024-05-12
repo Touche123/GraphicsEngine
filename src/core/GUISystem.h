@@ -23,6 +23,7 @@ public:
 		const FrameStats& frameStats);
 	void Shutdown() const;
 	void Update(RenderSystem* renderSystem, SceneBase* scene);
+	void UpdateInput();
 
 private:
 	nk_context* m_nuklearContext{ nullptr };

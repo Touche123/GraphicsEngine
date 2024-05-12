@@ -40,7 +40,7 @@ void Camera::Update(const double deltaTime)
 	{
 		// Update view from mouse movement
 		updateView();
-
+		
 		// Update Keyboard
 		if (Input::GetInstance().IsKeyHeld(GLFW_KEY_W)) { processKeyboard(Direction::FORWARD, deltaTime); }
 		if (Input::GetInstance().IsKeyHeld(GLFW_KEY_S)) { processKeyboard(Direction::BACKWARD, deltaTime); }

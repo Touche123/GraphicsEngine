@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <array>
+#include <iostream>
 
 #ifdef _DEBUG
 #include <cassert>
@@ -59,6 +60,8 @@ public:
 	auto MouseMoved() const noexcept { return m_mouseMoved; }
 	auto GetMouseX() const noexcept { return m_xPos; }
 	auto GetMouseY() const noexcept { return m_yPos; }
+	auto GetMouseScrollXOffset() const noexcept { return m_xOffset; }
+	auto GetMouseScrollYOffset() const noexcept { return m_yOffset; }
 
 	// Window
 	auto ShouldResize() const noexcept { return m_shouldResize; }
@@ -71,6 +74,37 @@ public:
 		this->m_mouseMoved = true;
 		this->m_xPos = xPos;
 		this->m_yPos = yPos;
+	};
+
+	// Mousebuttons
+	std::function<void(int, int, int)> mousePressed = [&](auto button, auto action, auto mods) {
+		m_mousePressed = true;
+		std::cout << "Mouse button 0\n";
+		/*switch (button)
+		{
+			case 0:
+				std::cout << "Mouse button 0\n";
+				break;
+
+			case 1:
+				std::cout << "Mouse button 1\n";
+				break;
+
+			case 2:
+				std::cout << "Mouse button 2\n";
+				break;
+		}*/
+	};
+
+	// Mouse scroll
+	std::function<void(double, double)> mouseScroll = [&](auto xOffset, auto yOffset) {
+		m_xOffset = xOffset;
+		m_yOffset = yOffset;
+	};
+
+	// SetChar
+	std::function<void(unsigned int)> textInput = [&](auto codepoint) {
+
 	};
 
 	// Key Pressed
@@ -105,6 +139,8 @@ private:
 	// Mouse
 	bool m_mouseMoved = false;
 	double m_xPos, m_yPos;
+	double m_xOffset, m_yOffset;
+	bool m_mousePressed = false;
 
 	// Resize
 	bool m_shouldResize = false;

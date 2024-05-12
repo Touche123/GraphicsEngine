@@ -264,7 +264,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene, const bool loadMater
 			if (albedoPath.length <= 0)
 			{
 				std::cout << "No diffuse material\n";
-				albedoPath = "Data/Textures/default.png";
+				albedoPath = "data/textures/default.png";
 			}
 				
 			aiString metallicPath;

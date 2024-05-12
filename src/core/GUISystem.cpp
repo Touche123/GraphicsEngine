@@ -2,6 +2,7 @@
 
 #include "../FrameStats.h"
 #include "../ResourceManager.h"
+#include "../Input.h"
 
 #include <fmt/core.h>
 #include <cstddef>
@@ -50,7 +51,7 @@ bool saveScene = false;
 /***********************************************************************************/
 void GUISystem::Init(GLFWwindow* windowPtr)
 {
-	m_nuklearContext = nk_glfw3_init(windowPtr, NK_GLFW3_INSTALL_CALLBACKS, MaxVertexBuffer, MaxElementBuffer);
+	m_nuklearContext = nk_glfw3_init(windowPtr, NK_GLFW3_DEFAULT, MaxVertexBuffer, MaxElementBuffer);
 
 	/* Load Fonts: if none of these are loaded a default font will be used  */
 	/* Load Cursor: if you uncomment cursor loading please hide the cursor */
@@ -59,6 +60,15 @@ void GUISystem::Init(GLFWwindow* windowPtr)
 		nk_glfw3_font_stash_begin(&atlas);
 		nk_glfw3_font_stash_end();
 	}
+}
+void GUISystem::UpdateInput()
+{
+	float xOffset = (float)Input::GetInstance().GetMouseScrollXOffset();
+	float yOffset = (float)Input::GetInstance().GetMouseScrollYOffset();
+
+	nk_input_begin(m_nuklearContext);
+	nk_input_scroll(m_nuklearContext, nk_vec2(xOffset, yOffset));
+	nk_input_end(m_nuklearContext);
 }
 
 /***********************************************************************************/
@@ -243,6 +253,8 @@ void GUISystem::Shutdown() const
 
 void GUISystem::Update(RenderSystem* renderSystem, SceneBase* scene)
 {	
+	UpdateInput();
+
 	if (renderSystem == nullptr)
 		return;
 

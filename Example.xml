@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Models>
 	<Model Name="Sponza" Path="Data/Models/gltf/sponza2/Sponza.gltf" World_X="0" World_Y="0" World_Z="0" Scale_X="0.01" Scale_Y="0.01" Scale_Z="0.01" />
-	<!-- <Model Name="Ljungby" Path="data/models/ljungby/166-A0.gltf" World_X="0" World_Y="0" World_Z="0" Scale_X="0.8" Scale_Y="0.8" Scale_Z="0.8" /> -->
+	<!-- <Model Name="Ljungby" Path="data/models/ljungby/166-A0.gltf" World_X="0" World_Y="0" World_Z="0" Scale_X="1.2" Scale_Y="1.2" Scale_Z="1.2" /> -->
 	<!-- <Model Name="DefaultCube" Path="Data/Models/Primitives/DefaultCube.obj" World_X="2" World_Y="1" World_Z="0" Scale_X="10" Scale_Y="1" Scale_Z="1" /> -->
 	<!-- <Model Name="DefaultPlane" Path="Data/Models/Primitives/DefaultPlane.obj" World_X="0" World_Y="0" World_Z="0" Scale_X="0.8" Scale_Y="0.8" Scale_Z="0.8" /> -->
 </Models>

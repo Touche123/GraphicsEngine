@@ -19,6 +19,10 @@
 /***********************************************************************************/
 void connectWindowInstanceToInput(GLFWwindow* window)
 {
+	
+	
+	
+
 	const auto resizeCallback = [](GLFWwindow* w, auto width, auto height) {
 		Input::GetInstance().windowResized(width, height);
 	};
@@ -33,7 +37,24 @@ void connectWindowInstanceToInput(GLFWwindow* window)
 		Input::GetInstance().mouseMoved(xPos, yPos);
 	};
 	glfwSetCursorPosCallback(window, cursorPosCallback);
+
+	const auto mouseCallback = [](GLFWwindow* w, auto button, auto action, auto mods) {
+		Input::GetInstance().mousePressed(button, action, mods);
+	};
+	glfwSetMouseButtonCallback(window, mouseCallback);
+
+	const auto mouseScrollCallback = [](GLFWwindow* w, auto xOffset, auto yOffset) {
+		Input::GetInstance().mouseScroll(xOffset, yOffset);
+	};
+	glfwSetScrollCallback(window, mouseScrollCallback);
+
+	const auto textInputCallback = [](GLFWwindow* w, auto codepoint) {
+		Input::GetInstance().textInput(codepoint);
+	};
+	glfwSetCharCallback(window, textInputCallback);
 }
+
+
 
 /***********************************************************************************/
 double frameTimeMilliseconds(const unsigned int numFramesRendered)

@@ -399,10 +399,6 @@ void RenderSystem::renderModelBoundingBox(GLShaderProgram& shader, RenderListIte
 		model = glm::translate(model, (*begin)->GetBoundingBox().getCenter());
 		model = glm::scale(model, glm::vec3((max.x - min.x) / 2, (max.y - min.y) / 2, (max.z - min.z) / 2));
 
-		std::printf("Center: %f, %f, %f \n", (*begin)->GetBoundingBox().getCenter().x, (*begin)->GetBoundingBox().getCenter().y, (*begin)->GetBoundingBox().getCenter().z);
-		std::printf("Min: %f, %f, %f \n", min.x, min.y, min.z);
-		std::printf("Max: %f, %f, %f \n", max.x, max.y, max.z);
-
 		shader.SetUniform("model", model);
 		//shader.SetUniform("model", (*begin)->GetModelMatrix());
 		shader.SetUniform("minExtents", (*begin)->GetBoundingBox().getMin());
