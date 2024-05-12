@@ -121,6 +121,37 @@ void Engine::SetActiveScene(const std::string_view sceneName)
 	m_renderer.UpdateView(m_camera);
 }
 
+bool rayIntersectsBoundingBox(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const AABB& aabb)
+{
+	float tmin = (aabb.getMin().x - rayOrigin.x) / rayDirection.x;
+	float tmax = (aabb.getMax().x - rayOrigin.x) / rayDirection.x;
+
+	if (tmin > tmax) std::swap(tmin, tmax);
+
+	float tymin = (aabb.getMin().y - rayOrigin.y) / rayDirection.y;
+	float tymax = (aabb.getMax().y - rayOrigin.y) / rayDirection.y;
+
+	if (tymin > tymax) std::swap(tymin, tymax);
+
+	if ((tmin > tymax) || (tymin > tmax))
+		return false;
+
+	if (tymin > tmin)
+		tmin = tymin;
+	if (tymax < tmax)
+		tmax = tymax;
+
+	float tzmin = (aabb.getMin().z - rayOrigin.z) / rayDirection.z;
+	float tzmax = (aabb.getMax().z - rayOrigin.z) / rayDirection.z;
+
+	if (tzmin > tzmax) std::swap(tzmin, tzmax);
+
+	if ((tmin > tzmax) || (tzmin > tmax))
+		return false;
+
+	return true;
+}
+
 /***********************************************************************************/
 void Engine::Execute()
 {
@@ -160,6 +191,36 @@ void Engine::Execute()
 		}
 
 		const auto dt{ timer.GetDelta() };
+
+		if (Input::GetInstance().IsMousePressed(GLFW_MOUSE_BUTTON_1))
+		{
+			double mouseX, mouseY;
+			mouseX = Input::GetInstance().GetMouseX();
+			mouseY = Input::GetInstance().GetMouseY();
+
+			glm::vec3 rayOrigin, rayDirection;
+
+			rayOrigin = glm::unProject(glm::vec3(mouseX, m_window.GetFramebufferDims().second - mouseY, 0.0),
+				m_camera.GetViewMatrix(),
+				m_camera.GetProjMatrix(m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second),
+				glm::vec4(0, 0, m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second));
+			rayDirection = glm::normalize(glm::unProject(glm::vec3(mouseX, m_window.GetFramebufferDims().second - mouseY, 1.0),
+				m_camera.GetViewMatrix(),
+				m_camera.GetProjMatrix(m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second),
+				glm::vec4(0, 0, m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second)) - rayOrigin);
+
+			for (const auto& model : m_activeScene->m_sceneModels)
+			{
+				model->SetSelected(false);
+
+				if (rayIntersectsBoundingBox(rayOrigin, rayDirection, model->GetBoundingBox()))
+				{
+					model->SetSelected(true);
+					std::cout << "Clicked model with ID: " << model->GetModelName() << std::endl;
+					break;
+				}
+			}
+		}
 
 		Input::GetInstance().Update();
 

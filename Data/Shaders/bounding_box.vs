@@ -8,6 +8,7 @@ uniform mat4 model;
 
 uniform vec3 minExtents;
 uniform vec3 maxExtents;
+uniform bool selected;
 
 void main() {
 	gl_Position = projection * view * model * vec4(position, 1.0);

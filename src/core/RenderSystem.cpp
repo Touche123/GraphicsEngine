@@ -400,9 +400,16 @@ void RenderSystem::renderModelBoundingBox(GLShaderProgram& shader, RenderListIte
 		model = glm::scale(model, glm::vec3((max.x - min.x) / 2, (max.y - min.y) / 2, (max.z - min.z) / 2));
 
 		shader.SetUniform("model", model);
-		//shader.SetUniform("model", (*begin)->GetModelMatrix());
-		shader.SetUniform("minExtents", (*begin)->GetBoundingBox().getMin());
-		shader.SetUniform("maxExtents", (*begin)->GetBoundingBox().getMax());
+		//shader.SetUniform("minExtents", (*begin)->GetBoundingBox().getMin());
+		//shader.SetUniform("maxExtents", (*begin)->GetBoundingBox().getMax());
+		if ((*begin)->GetSelected())
+		{
+			shader.SetUniformi("selected", true);
+		} else
+		{
+			shader.SetUniformi("selected", false);
+		}
+		
 		const auto& meshes{ (*begin)->GetMeshes() };
 		for (const auto& mesh : meshes)
 		{

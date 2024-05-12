@@ -40,6 +40,8 @@ public:
 	auto GetPosition() const noexcept { return m_position; }
 	auto GetScale() const noexcept { return m_scale; }
 	void SetPosition(glm::vec3 position);
+	void SetSelected(bool selected) { m_selected = selected; }
+	bool GetSelected() { return m_selected; }
 
 protected:
 	std::vector<Mesh> m_meshes;
@@ -56,7 +58,7 @@ private:
 	float m_radians;
 
 	AABB m_aabb; // Model bounding box
-
+	bool m_selected = false;
 	// Model name
 	const std::string m_name;
 	// Location on disk holding model and textures
