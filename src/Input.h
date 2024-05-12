@@ -33,6 +33,7 @@ public:
 		m_shouldResize = false;
 
 		std::copy(m_keys.cbegin(), m_keys.cend(), m_prevKeys.begin());
+		std::copy(m_mouseButtons.cbegin(), m_mouseButtons.cend(), m_prevMouseButtons.begin());
 	}
 
 	// Getters
@@ -54,6 +55,22 @@ public:
 		assert(key < 1024);
 #endif
 		return m_keys[key];
+	}
+
+	auto IsMousePressed(const std::size_t button) const noexcept
+	{
+#ifdef _DEBUG
+		assert(button < 8);
+#endif
+		return m_mouseButtons[button] && !m_prevMouseButtons[button];
+	}
+
+	auto IsMouseHeld(const std::size_t button) const noexcept
+	{
+#ifdef _DEBUG
+		assert(button < 8);
+#endif
+		return m_mouseButtons[button];
 	}
 
 	// Mouse
@@ -78,22 +95,19 @@ public:
 
 	// Mousebuttons
 	std::function<void(int, int, int)> mousePressed = [&](auto button, auto action, auto mods) {
-		m_mousePressed = true;
-		std::cout << "Mouse button 0\n";
-		/*switch (button)
+		if (button >= 0 && button < 8)
 		{
-			case 0:
-				std::cout << "Mouse button 0\n";
-				break;
-
+			switch (action)
+			{
+			// Pressed
 			case 1:
-				std::cout << "Mouse button 1\n";
+				this->m_mouseButtons[button] = true;
 				break;
-
-			case 2:
-				std::cout << "Mouse button 2\n";
+			case 0:
+				this->m_mouseButtons[button] = false;
 				break;
-		}*/
+			}
+		}
 	};
 
 	// Mouse scroll
@@ -137,10 +151,11 @@ private:
 	std::array<bool, 1024> m_prevKeys;
 
 	// Mouse
+	std::array<bool, 8> m_mouseButtons;
+	std::array<bool, 8> m_prevMouseButtons;
 	bool m_mouseMoved = false;
 	double m_xPos, m_yPos;
 	double m_xOffset, m_yOffset;
-	bool m_mousePressed = false;
 
 	// Resize
 	bool m_shouldResize = false;

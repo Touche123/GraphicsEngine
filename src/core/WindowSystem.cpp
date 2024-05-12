@@ -141,7 +141,6 @@ void WindowSystem::Update()
 		{
 			DisableCursor();
 		}
-
 	}
 
 	// Check if the window needs to be closed
