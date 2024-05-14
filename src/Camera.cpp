@@ -33,6 +33,9 @@ void Camera::Update(const double deltaTime)
 
 	if (Input::GetInstance().IsKeyPressed(GLFW_KEY_TAB))
 	{
+		if (m_dirty)
+			m_firstMouse = true;
+
 		m_dirty = !m_dirty;
 	}
 
