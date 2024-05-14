@@ -27,4 +27,5 @@ public:
 
 private:
 	nk_context* m_nuklearContext{ nullptr };
+	bool m_guiClicked = false;
 };

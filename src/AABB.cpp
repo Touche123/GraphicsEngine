@@ -10,6 +10,7 @@ AABB::AABB() { setNull(); }
 AABB::AABB(const glm::vec3& center, const float radius)
 {
 	setNull();
+	m_center = center;
 	extend(center, radius);
 }
 
@@ -73,7 +74,13 @@ void AABB::extend(const AABB& aabb)
 
 void AABB::setPosition(glm::vec3 position)
 {
-
+	if (!isNull())
+	{
+		glm::vec3 center = (mMin + mMax) * 0.5f;
+		glm::vec3 halfSize = (mMax - mMin) * 0.5f;
+		mMin = position - halfSize;
+		mMax = position + halfSize;
+	}
 }
 
 void AABB::extendDisk(const glm::vec3& c, const glm::vec3& n, float r)

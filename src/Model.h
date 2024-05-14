@@ -39,7 +39,7 @@ public:
 	auto GetModelFullPath() const noexcept { return m_fullPath; }
 	auto GetPosition() const noexcept { return m_position; }
 	auto GetScale() const noexcept { return m_scale; }
-	void SetPosition(glm::vec3 position);
+	void SetPosition(const glm::vec3& pos);
 	void SetSelected(bool selected) { m_selected = selected; }
 	bool GetSelected() { return m_selected; }
 

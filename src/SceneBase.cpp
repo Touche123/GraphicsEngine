@@ -134,7 +134,8 @@ void SceneBase::Load(const pugi::xml_node& sceneNode)
 
 			auto loadedModel = ResourceManager::GetInstance().GetModel(modelName, modelPath);
 			loadedModel->Scale(glm::vec3(modelScaleX, modelScaleY, modelScaleZ));
-			loadedModel->Translate(glm::vec3(modelWorldX, modelWorldY, modelWorldZ));
+			loadedModel->SetPosition(glm::vec3(modelWorldX, modelWorldY, modelWorldZ));
+			//loadedModel->Translate(glm::vec3(modelWorldX, modelWorldY, modelWorldZ));
 
 			AddModel(loadedModel);
 			printf("Loaded model - Name: %s, Path: %s \n", model.attribute("Name").as_string(), model.attribute("Path").as_string());

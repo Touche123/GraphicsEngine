@@ -79,8 +79,6 @@ void GUISystem::UpdateInput()
 void GUISystem::Render(const int framebufferWidth,
 	const int framebufferHeight, const FrameStats& frameStats, SceneBase* scene)
 {
-	auto modelPtr = ResourceManager::GetInstance().GetModelByName("Sponza");
-	
 	struct nk_colorf bg;
 	bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
 
@@ -156,18 +154,22 @@ void GUISystem::Render(const int framebufferWidth,
 		{
 			if (model->GetSelected())
 			{
-				nk_layout_row_begin(m_nuklearContext, NK_STATIC, 0, 2);
+				
+				nk_layout_row_begin(m_nuklearContext, NK_STATIC, 30, 2);
 				{
+					nk_layout_row_push(m_nuklearContext, 100.0f); // Push width for the label
+					float positionX = model->GetPosition().x;
+					
 					nk_layout_row_push(m_nuklearContext, 200);
-					nk_value_float(m_nuklearContext, "Model pos  x", model->GetPosition().x);
-					nk_layout_row_push(m_nuklearContext, 110);
-					if (nk_slider_float(m_nuklearContext, -10000.0f, &modelPosX, 10000.0f, 0.001f))
+					
+					if (nk_slider_float(m_nuklearContext, -30.0f, &positionX, 30.f, 0.001f))
 					{
-						model->Translate({ modelPosX, 0, 0 });
+						Input::GetInstance().SetGuiHit();
+						model->SetPosition({ positionX, 0, 0});
 					}
 					nk_layout_row_end(m_nuklearContext);
-
 				}
+				
 				nk_layout_row_end(m_nuklearContext);
 			}
 		}
@@ -249,9 +251,25 @@ void GUISystem::Render(const int framebufferWidth,
 			nk_layout_row_end(m_nuklearContext);
 		}
 	}
+	if (nk_input_has_mouse_click_in_rect(&m_nuklearContext->input, NK_BUTTON_LEFT, nk_window_get_bounds(m_nuklearContext)))
+	{
+		m_guiClicked = true;
+	}
+
+	if (!m_nuklearContext->input.mouse.buttons[NK_BUTTON_LEFT].down)
+	{
+		m_guiClicked = false;
+	}
+
+	if (m_guiClicked)
+	{
+		Input::GetInstance().SetGuiHit();
+	}
+		
 	nk_end(m_nuklearContext);
 
 	nk_glfw3_render(NK_ANTI_ALIASING_ON);
+		
 }
 
 /***********************************************************************************/

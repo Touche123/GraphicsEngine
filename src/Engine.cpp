@@ -19,10 +19,6 @@
 /***********************************************************************************/
 void connectWindowInstanceToInput(GLFWwindow* window)
 {
-	
-	
-	
-
 	const auto resizeCallback = [](GLFWwindow* w, auto width, auto height) {
 		Input::GetInstance().windowResized(width, height);
 	};
@@ -116,7 +112,7 @@ void Engine::SetActiveScene(const std::string_view sceneName)
 		std::cerr << "Engine Error: Scene not found: " << sceneName << std::endl;
 		return;
 	}
-	
+
 	m_activeScene = scene->second.get();
 	m_renderer.UpdateView(m_camera);
 }
@@ -192,45 +188,9 @@ void Engine::Execute()
 
 		const auto dt{ timer.GetDelta() };
 
-		if (Input::GetInstance().IsMousePressed(GLFW_MOUSE_BUTTON_1))
-		{
-			double mouseX, mouseY;
-			mouseX = Input::GetInstance().GetMouseX();
-			mouseY = Input::GetInstance().GetMouseY();
 
-			glm::vec3 rayOrigin, rayDirection;
-
-			rayOrigin = glm::unProject(glm::vec3(mouseX, m_window.GetFramebufferDims().second - mouseY, 0.0),
-				m_camera.GetViewMatrix(),
-				m_camera.GetProjMatrix(m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second),
-				glm::vec4(0, 0, m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second));
-			rayDirection = glm::normalize(glm::unProject(glm::vec3(mouseX, m_window.GetFramebufferDims().second - mouseY, 1.0),
-				m_camera.GetViewMatrix(),
-				m_camera.GetProjMatrix(m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second),
-				glm::vec4(0, 0, m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second)) - rayOrigin);
-
-			for (const auto& model : m_activeScene->m_sceneModels)
-			{
-				model->SetSelected(false);
-
-				if (rayIntersectsBoundingBox(rayOrigin, rayDirection, model->GetBoundingBox()))
-				{
-					model->SetSelected(true);
-					std::cout << "Clicked model with ID: " << model->GetModelName() << std::endl;
-					break;
-				}
-			}
-		}
 
 		Input::GetInstance().Update();
-
-		/*if (Input::GetInstance().IsKeyPressed(GLFW_KEY_L)) 
-		{ 
-			std::ofstream os("out.cereal", std::ios::binary);
-			cereal::BinaryOutputArchive archive(os);
-
-			archive(m_activeScene->m_staticPointLights);
-		}*/
 
 		m_window.Update();
 
@@ -241,12 +201,48 @@ void Engine::Execute()
 		m_activeScene->Update(dt);
 
 		m_renderer.Update(m_camera);
-		
+
 		const auto& renderList{ cullViewFrustum() };
 		m_renderer.Render(m_camera, renderList.cbegin(), renderList.cend(), *m_activeScene, false);
 
 		m_guiSystem.Update(&m_renderer, m_activeScene);
 		m_guiSystem.Render(width, height, frameStats, m_activeScene);
+
+		if (Input::GetInstance().IsMousePressed(GLFW_MOUSE_BUTTON_1))
+		{
+			if (!Input::GetInstance().GetGuiHit())
+			{
+
+
+
+				double mouseX, mouseY;
+				mouseX = Input::GetInstance().GetMouseX();
+				mouseY = Input::GetInstance().GetMouseY();
+
+				glm::vec3 rayOrigin, rayDirection;
+
+				rayOrigin = glm::unProject(glm::vec3(mouseX, m_window.GetFramebufferDims().second - mouseY, 0.0),
+					m_camera.GetViewMatrix(),
+					m_camera.GetProjMatrix(m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second),
+					glm::vec4(0, 0, m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second));
+				rayDirection = glm::normalize(glm::unProject(glm::vec3(mouseX, m_window.GetFramebufferDims().second - mouseY, 1.0),
+					m_camera.GetViewMatrix(),
+					m_camera.GetProjMatrix(m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second),
+					glm::vec4(0, 0, m_window.GetFramebufferDims().first, m_window.GetFramebufferDims().second)) - rayOrigin);
+
+				for (const auto& model : m_activeScene->m_sceneModels)
+				{
+					model->SetSelected(false);
+
+					if (rayIntersectsBoundingBox(rayOrigin, rayDirection, model->GetBoundingBox()))
+					{
+						model->SetSelected(true);
+						std::cout << "Clicked model with ID: " << model->GetModelName() << std::endl;
+						break;
+					}
+				}
+			}
+		}
 
 		m_window.SwapBuffers();
 

@@ -124,6 +124,7 @@ private:
 
 	glm::vec3 mMin; ///< Minimum point.
 	glm::vec3 mMax; ///< Maximum point.
+	glm::vec3 m_center;
 };
 
 #endif

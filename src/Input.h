@@ -24,6 +24,11 @@ public:
 		return instance;
 	}
 
+	void SetGuiHit()
+	{
+		m_mouseGuiHit = true;
+	}
+
 	Input(const Input&) = delete;
 	Input& operator=(const Input&) = delete;
 
@@ -31,7 +36,7 @@ public:
 	{
 		m_mouseMoved = false;
 		m_shouldResize = false;
-
+		m_mouseGuiHit = false;
 		std::copy(m_keys.cbegin(), m_keys.cend(), m_prevKeys.begin());
 		std::copy(m_mouseButtons.cbegin(), m_mouseButtons.cend(), m_prevMouseButtons.begin());
 	}
@@ -79,6 +84,7 @@ public:
 	auto GetMouseY() const noexcept { return m_yPos; }
 	auto GetMouseScrollXOffset() const noexcept { return m_xOffset; }
 	auto GetMouseScrollYOffset() const noexcept { return m_yOffset; }
+	auto GetGuiHit() const noexcept { return m_mouseGuiHit; }
 
 	// Window
 	auto ShouldResize() const noexcept { return m_shouldResize; }
@@ -118,7 +124,7 @@ public:
 
 	// SetChar
 	std::function<void(unsigned int)> textInput = [&](auto codepoint) {
-
+		
 	};
 
 	// Key Pressed
@@ -154,6 +160,7 @@ private:
 	std::array<bool, 8> m_mouseButtons;
 	std::array<bool, 8> m_prevMouseButtons;
 	bool m_mouseMoved = false;
+	bool m_mouseGuiHit = false;
 	double m_xPos, m_yPos;
 	double m_xOffset, m_yOffset;
 

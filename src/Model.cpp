@@ -62,10 +62,11 @@ void Model::Scale(const glm::vec3& scale)
 }
 
 /***********************************************************************************/
-void Model::SetPosition(glm::vec3 position)
+void Model::SetPosition(const glm::vec3& pos)
 {
-	m_position = position;
-	
+	m_position = pos;
+	//m_aabb.translate(pos);
+	m_aabb.setPosition(pos);
 }
 
 /***********************************************************************************/
